@@ -384,6 +384,7 @@
       <form
         id="form-daftar-mitra"
         class="dm-form-wrapper"
+        enctype="multipart/form-data"
         onsubmit="handleFinalSubmit(event)"
       >
         <div class="dm-stepper">
@@ -541,6 +542,7 @@
             <input
               type="file"
               id="image-input-trigger"
+              name="studio_images[]"
               class="dm-input"
               accept="image/*"
               multiple
@@ -871,6 +873,7 @@
       </form>
     </div>
 
-    <script src="/photohunt-backend/public/js/daftar-studio.js" defer></script>
+    <script src="http://localhost:3000/js/daftar-studio.js"></script>
+
   </body>
 </html>
