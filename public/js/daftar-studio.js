@@ -228,12 +228,20 @@ async function handleFinalSubmit(e) {
 
   const form = document.getElementById("form-daftar-mitra");
   const formData = new FormData(form);
-
   formData.append("mitra_id", currentMitraId);
+  // ❗ pastikan file benar-benar dikirim
+selectedStudioImages.forEach(file => {
+  formData.append("studio_images[]", file);
+});
 
-  const submitBtn = document.querySelector(
-    '.dm-btn-next[type="submit"]'
-  );
+
+  // DEBUG WAJIB (LIAT DI CONSOLE)
+  console.log("=== FORM DATA ===");
+  for (let pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
+  }
+
+  const submitBtn = document.querySelector('.dm-btn-next[type="submit"]');
   submitBtn.innerText = "Mengirim...";
   submitBtn.disabled = true;
 
@@ -245,11 +253,9 @@ async function handleFinalSubmit(e) {
 
     if (!res.ok) throw new Error("Gagal menyimpan studio");
 
-    // ✅ LANGSUNG REDIRECT
     window.location.href = "mitra-dashboard.html";
-
   } catch (err) {
-    alert("Error: " + err.message);
+    alert(err.message);
     submitBtn.innerText = "Selesai & Daftarkan";
     submitBtn.disabled = false;
   }
