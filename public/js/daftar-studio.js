@@ -1,12 +1,13 @@
-let currentMitraId = localStorage.getItem("mitra_id");
+const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
-if (!currentMitraId) {
-  currentMitraId = "mitra_demo_" + Math.floor(Math.random() * 10000);
-  localStorage.setItem("mitra_id", currentMitraId);
-  console.log(
-    "Mode Demo: ID Mitra dibuat sementara -> " + currentMitraId
-  );
+if (!currentUser || currentUser.role !== "mitra") {
+  alert("Session mitra tidak valid. Silakan login ulang.");
+  window.location.href = "/login.html";
+  throw new Error("INVALID MITRA SESSION");
 }
+
+const currentMitraId = currentUser.id; // ✅ ID ASLI DARI DB
+
 
 const STORAGE_KEY = `mitra_form_final_${currentMitraId}`;
 
@@ -27,6 +28,7 @@ function renderStep() {
       l.classList.toggle("active", i < currentStep);
     }
   });
+
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 function nextStep() {
@@ -221,35 +223,34 @@ function addPackage() {
   container.appendChild(div);
 }
 
-function handleFinalSubmit(e) {
+async function handleFinalSubmit(e) {
   e.preventDefault();
-
-  const stepEl = steps[steps.length - 1];
-  const fields = stepEl.querySelectorAll("input, textarea, select");
-  for (const f of fields) {
-    if (!f.checkValidity()) {
-      f.reportValidity();
-      return;
-    }
-  }
 
   const form = document.getElementById("form-daftar-mitra");
   const formData = new FormData(form);
 
-  formData.delete("studio_images");
-  selectedStudioImages.forEach((file) => {
-    formData.append("studio_images[]", file);
-  });
+  formData.append("mitra_id", currentMitraId);
 
-  const btn = document.querySelector('.dm-btn-next[type="submit"]');
-  btn.innerText = "Mengirim...";
-  btn.disabled = true;
+  const submitBtn = document.querySelector(
+    '.dm-btn-next[type="submit"]'
+  );
+  submitBtn.innerText = "Mengirim...";
+  submitBtn.disabled = true;
 
-  setTimeout(() => {
-    alert(
-      "Pendaftaran Berhasil! Data studio dan " +
-      selectedStudioImages.length +
-      " foto telah dikirim."
-    );
-  }, 1500);
+  try {
+    const res = await fetch("http://localhost:3000/studios", {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) throw new Error("Gagal menyimpan studio");
+
+    // ✅ LANGSUNG REDIRECT
+    window.location.href = "mitra-dashboard.html";
+
+  } catch (err) {
+    alert("Error: " + err.message);
+    submitBtn.innerText = "Selesai & Daftarkan";
+    submitBtn.disabled = false;
+  }
 }

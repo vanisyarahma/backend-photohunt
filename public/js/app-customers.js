@@ -1,14 +1,13 @@
 // --- LOGIC AUTH (Biarkan dikomentari jika belum dipakai) ---
 // const currentUser = localStorage.getItem('currentUser');
 // if (!currentUser) {
-//     window.location.href = 'login.html';
+//   window.location.href = 'login.html';
 // }
 // const user = JSON.parse(currentUser);
 // if (user && user.role === 'mitra') {
-//     window.location.href = 'mitra-dashboard.html';
+//   window.location.href = 'mitra-dashboard.html';
 // }
-// console.log('Selamat datang pelanggan:', user ? user.name : 'Guest');
-
+const API_BASE_URL = "";
 
 const scope = {
   category: "photobox",
@@ -17,7 +16,7 @@ const scope = {
   async loadStudios() {
     try {
       const res = await fetch(
-        `http://localhost:3000/studios?category=${this.category}&city=${this.city}`
+        `${API_BASE_URL}/studios?category=${this.category}&city=${this.city}`
       );
       const studios = await res.json();
       this.renderStudios(studios);
@@ -43,9 +42,9 @@ const scope = {
   filterStudio(city, el) {
     this.city = city;
 
-    document.querySelectorAll(".city-tab").forEach(tab => {
-      tab.classList.remove("active");
-    });
+    document.querySelectorAll(".city-tab").forEach(tab =>
+      tab.classList.remove("active")
+    );
     el.classList.add("active");
 
     this.loadStudios();
@@ -65,7 +64,12 @@ const scope = {
       card.className = "studio-card";
 
       card.innerHTML = `
-        <img class="studio-img" src="/images/studios/${studio.image}" />
+        <img 
+          class="studio-img" 
+          src="${studio.image 
+            ? `${API_BASE_URL}/images/studios/${studio.image}` 
+            : 'https://via.placeholder.com/400x225'}" 
+        />
         <div class="studio-name">${studio.name}</div>
         <div>${studio.location}</div>
         <div>Rp ${Number(studio.price).toLocaleString("id-ID")}</div>
@@ -79,7 +83,6 @@ const scope = {
     });
   }
 };
-
 
 document.addEventListener("DOMContentLoaded", () => {
   scope.loadStudios();
@@ -110,4 +113,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 });
-
