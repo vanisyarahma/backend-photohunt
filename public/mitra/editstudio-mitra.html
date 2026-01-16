@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Edit Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/photohunt-backend/public/style.css" />
+  </head>
+  <body>
+    <div class="mitra-edit-page">
+      <div class="mitra-edit-backdrop" id="editStudioModal">
+        <div class="mitra-edit-modal">
+          <div class="mitra-edit-header">
+            <div class="mitra-edit-title" id="studioTitle">Edit Studio</div>
+            <button class="mitra-edit-close" id="closeEditModal">✕</button>
+          </div>
+
+          <div class="mitra-edit-body">
+            <div class="mitra-form-group">
+              <label>Nama Studio</label>
+              <input type="text" id="studioName" />
+            </div>
+
+            <div class="mitra-form-group">
+              <label>Deskripsi</label>
+              <textarea rows="3" id="studioDescription"></textarea>
+            </div>
+
+            <div class="mitra-form-group">
+              <label>Range Harga</label>
+              <input type="text" id="studioPrice" />
+            </div>
+
+            <div class="mitra-form-group">
+              <label>Fasilitas</label>
+              <div id="facilityList"></div>
+            </div>
+
+            <div class="mitra-add-facility">
+              <input
+                type="text"
+                id="newFacilityInput"
+                placeholder="Tambah fasilitas"
+              />
+              <button type="button" id="addFacilityBtn">＋</button>
+            </div>
+
+            <div class="mitra-edit-footer">
+              <button type="button" class="mitra-btn-cancel" id="cancelEdit">
+                Batal
+              </button>
+              <button type="button" class="mitra-btn-save" id="saveEdit">
+                Simpan Perubahan
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/editstudio-mitra.js" defer></script>
+  </body>
+</html>

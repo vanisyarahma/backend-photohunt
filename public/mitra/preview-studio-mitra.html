@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Preview Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/photohunt-backend/public/style.css"> 
+
+</head>
+
+<body>
+  <div class="mitra-preview-page">
+    <div class="mitra-preview-backdrop">
+    
+    <div class="mitra-preview-modal">
+
+      <div class="mitra-preview-header">
+        <div class="mitra-preview-title" id="previewTitle">
+          Memuat Studio...
+        </div>
+        <button class="mitra-preview-close" id="closePreview">✕</button>
+      </div>
+
+      <div class="mitra-preview-body">
+
+        <div class="mitra-preview-desc" id="previewDesc">
+          <span class="loading-state">Sedang mengambil data studio...</span>
+        </div>
+
+        <div class="mitra-preview-info">
+          <div>
+            <div class="mitra-info-label">Lokasi</div>
+            <div class="mitra-info-text" id="previewLocation">-</div>
+          </div>
+
+          <div>
+            <div class="mitra-info-label">Rating</div>
+            <div class="mitra-info-text" id="previewRating">
+              -
+            </div>
+          </div>
+        </div>
+
+        <div class="mitra-section">
+          <div class="mitra-section-title">Fasilitas</div>
+          <div class="mitra-chips" id="previewFacilities">
+             </div>
+        </div>
+
+        <div class="mitra-section">
+          <div class="mitra-section-title">Paket Tersedia</div>
+
+          <div id="previewPackagesWrapper">
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/photohunt-backend/public/js/preview-studio-mitra.js"></script>
+</body>
+</html>

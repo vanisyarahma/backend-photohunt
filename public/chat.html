@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhotoHunt - Customer Chat</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+       :root {
+            --ph-chat-black: #000000;
+            --ph-chat-white: #ffffff;
+            --ph-chat-bg-grey: #f7f7f7;
+            --ph-chat-border: #e0e0e0;
+            --ph-chat-hover: #f2f2f2;
+            --ph-chat-text-main: #000000;
+            --ph-chat-text-sub: #828282;
+            --ph-chat-text-desc: #454545;
+            --ph-chat-bubble-in: #e0e0e0; 
+            --ph-chat-bubble-out: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--ph-chat-white);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .ph-icon {
+            width: 24px;
+            height: 24px;
+            stroke: var(--ph-chat-black);
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .ph-icon-sm {
+            width: 20px;
+            height: 20px;
+        }
+        .ph-icon-grey {
+            stroke: var(--ph-chat-text-sub);
+        }
+
+        .ph-chat-sidebar-wrapper {
+            width: 320px;
+            height: 100%;
+            border-right: 1px solid var(--ph-chat-border);
+            display: flex;
+            flex-direction: column;
+            background: var(--ph-chat-white);
+            flex-shrink: 0;
+        }
+
+        .ph-chat-sidebar-header {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ph-chat-back-btn {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .ph-chat-back-btn:hover {
+            background-color: var(--ph-chat-bg-grey);
+        }
+
+        .ph-chat-app-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ph-chat-text-main);
+        }
+
+        .ph-chat-search-wrap {
+            padding: 0 24px 16px;
+        }
+
+        .ph-chat-search-box {
+            background: var(--ph-chat-white);
+            border: 1px solid var(--ph-chat-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ph-chat-search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+            color: var(--ph-chat-text-main);
+        }
+        .ph-chat-search-box input::placeholder {
+            color: #bdbdbd;
+        }
+
+        .ph-chat-list-scroll {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .ph-chat-list-item {
+            display: flex;
+            padding: 16px 24px;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid transparent; 
+        }
+
+        .ph-chat-list-item:hover {
+            background-color: var(--ph-chat-hover);
+        }
+
+        .ph-chat-list-item.active {
+            background-color: #f0f0f0;
+        }
+
+        .ph-chat-avatar-md {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            background-color: #eee;
+        }
+        .ph-chat-avatar-md img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ph-chat-item-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .ph-chat-item-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--ph-chat-text-main);
+        }
+
+        .ph-chat-item-preview {
+            font-size: 14px;
+            color: var(--ph-chat-text-desc);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ph-chat-main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: var(--ph-chat-white);
+            position: relative;
+        }
+
+        .ph-chat-main-header {
+            height: 70px;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--ph-chat-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .ph-chat-avatar-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #eee;
+        }
+        .ph-chat-avatar-sm img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ph-chat-header-details h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ph-chat-text-main);
+        }
+        .ph-chat-header-details p {
+            font-size: 12px;
+            color: var(--ph-chat-text-sub);
+            margin-top: 2px;
+        }
+
+        .ph-chat-messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ph-chat-date-divider {
+            text-align: center;
+            color: var(--ph-chat-text-sub);
+            font-size: 12px;
+            margin: 16px 0 24px 0;
+            font-weight: 400;
+        }
+
+        .ph-chat-msg-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        .ph-chat-msg-row.sent {
+            justify-content: flex-end;
+        }
+        .ph-chat-msg-row.received {
+            justify-content: flex-start;
+        }
+
+        .ph-chat-bubble {
+            max-width: 65%;
+            padding: 10px 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .ph-chat-bubble.sent {
+            background-color: var(--ph-chat-bubble-out);
+            color: var(--ph-chat-white);
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .ph-chat-bubble.received {
+            background-color: var(--ph-chat-bubble-in);
+            color: var(--ph-chat-text-main);
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .ph-chat-input-container {
+            padding: 16px 24px 24px 24px;
+            background: var(--ph-chat-white);
+            flex-shrink: 0;
+        }
+
+        .ph-chat-input-wrapper {
+            border: 1px solid var(--ph-chat-border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 48px;
+        }
+
+        .ph-chat-input-wrapper input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            color: var(--ph-chat-text-main);
+        }
+        .ph-chat-input-wrapper input::placeholder {
+            color: #bdbdbd;
+        }
+
+        .ph-chat-input-icons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .ph-chat-icon-btn {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .ph-chat-icon-btn:hover {
+            opacity: 1;
+        }
+
+       .ph-chat-profile-panel {
+            width: 300px;
+            border-left: 1px solid var(--ph-chat-border);
+            background: var(--ph-chat-white);
+            display: flex;
+            flex-direction: column;
+            padding: 40px 24px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .ph-chat-profile-summary {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .ph-chat-avatar-lg {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 16px;
+            background-color: #eee;
+        }
+        .ph-chat-avatar-lg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ph-chat-profile-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--ph-chat-text-main);
+            margin-bottom: 4px;
+        }
+        .ph-chat-profile-status {
+            font-size: 14px;
+            color: var(--ph-chat-text-sub);
+        }
+
+        .ph-chat-btn-action {
+            background-color: var(--ph-chat-black);
+            color: var(--ph-chat-white);
+            border-radius: 8px;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 32px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .ph-chat-btn-action:hover {
+            opacity: 0.9;
+        }
+
+        .ph-chat-menu-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ph-chat-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            cursor: pointer;
+            color: var(--ph-chat-text-main);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .ph-chat-menu-item:hover span {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="ph-chat-sidebar-wrapper">
+        <div class="ph-chat-sidebar-header">
+            <div class="ph-chat-back-btn" id="ph-chat-back-button">
+                <svg class="ph-icon" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </div>
+            <div class="ph-chat-app-title">PhotoHunt</div>
+        </div>
+
+        <div class="ph-chat-search-wrap">
+            <div class="ph-chat-search-box">
+                <svg class="ph-icon ph-icon-sm ph-icon-grey" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Search chats">
+            </div>
+        </div>
+
+        <div class="ph-chat-list-scroll" id="ph-chat-list-container">
+            </div>
+    </div>
+
+
+    <div class="ph-chat-main-wrapper">
+        
+        <div class="ph-chat-main-header">
+            <div class="ph-chat-avatar-sm">
+                <img src="" alt="Avatar" id="ph-header-avatar">
+            </div>
+            <div class="ph-chat-header-details">
+                <h3 id="ph-header-name">Loading...</h3>
+                <p id="ph-header-status">Loading...</p>
+            </div>
+        </div>
+
+        <div class="ph-chat-messages-area" id="ph-messages-container">
+            <div class="ph-chat-date-divider" id="ph-chat-date">Today</div>
+            </div>
+
+        <div class="ph-chat-input-container">
+            <div class="ph-chat-input-wrapper">
+                <input type="text" placeholder="Enter your message" id="ph-message-input">
+                <div class="ph-chat-input-icons">
+                    <div class="ph-chat-icon-btn">
+                        <svg class="ph-icon ph-icon-sm ph-icon-grey" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    </div>
+                    <div class="ph-chat-icon-btn">
+                        <svg class="ph-icon ph-icon-sm ph-icon-grey" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                    </div>
+                    <div class="ph-chat-icon-btn">
+                        <svg class="ph-icon ph-icon-sm ph-icon-grey" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="ph-chat-profile-panel">
+        <div class="ph-chat-profile-summary">
+            <div class="ph-chat-avatar-lg">
+                <img src="" alt="Profile" id="ph-profile-avatar">
+            </div>
+            <div class="ph-chat-profile-name" id="ph-profile-name">Name</div>
+            <div class="ph-chat-profile-status" id="ph-profile-status">Active</div>
+        </div>
+
+        <a href="#" class="ph-chat-btn-action">View profile</a>
+
+        <div class="ph-chat-menu-list">
+            <div class="ph-chat-menu-item">
+                <svg class="ph-icon ph-icon-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Search chat</span>
+            </div>
+            <div class="ph-chat-menu-item">
+                <svg class="ph-icon ph-icon-sm" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Sent images</span>
+            </div>
+            <div class="ph-chat-menu-item">
+                <svg class="ph-icon ph-icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                <span>More options</span>
+            </div>
+        </div>
+    </div>
+    <script src="/photohunt-backend/public/js/chat.js" defer></script>
+
+</body>
+</html>
