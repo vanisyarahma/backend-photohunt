@@ -1,19 +1,26 @@
-const multer = require("multer");
 const express = require("express");
 const mysql = require("mysql2/promise");
 const cors = require("cors");
 const path = require("path");
+const multer = require("multer");
 
 const app = express();
 
+/* ================= MIDDLEWARE ================= */
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* ================= STATIC ================= */
 app.use(express.static(path.join(__dirname, "../public")));
-app.use("/images", express.static(path.join(__dirname, "../images")));
-const upload = multer({ dest: "images/studios/" });
+app.use("/images", express.static(path.join(__dirname, "images")));
 
+/* ================= MULTER ================= */
+const upload = multer({
+  destination: path.join(__dirname, "images/studios")
+});
+
+/* ================= DB CONFIG ================= */
 const dbConfig = {
   host: "localhost",
   user: "root",
@@ -23,96 +30,42 @@ const dbConfig = {
 
 let db;
 
-// ================= DB + SERVER =================
-async function startServer() {
-  try {
-    db = await mysql.createConnection(dbConfig);
-    console.log("✅ MySQL connected");
-
-    app.listen(3000, () => {
-      console.log("🚀 Server running http://localhost:3000");
-    });
-  } catch (err) {
-    console.error("❌ DB connection failed:", err);
-  }
-}
-
-// ================= ROUTE TEST =================
-app.get("/ping", (req, res) => {
-  res.json({ message: "API OK" });
-});
-
-// ================= POST STUDIO =================
-
-// ================= START =================
-startServer();
-
-// ======================
-// CEK APAKAH MITRA SUDAH PUNYA STUDIO
-// ======================
-app.get("/mitra/:mitraId/has-studio", async (req, res) => {
-  try {
-    const { mitraId } = req.params;
-
-    const [rows] = await db.query(
-      "SELECT id FROM studios WHERE mitra_id=? LIMIT 1",
-      [mitraId]
-    );
-
-    res.json({ hasStudio: rows.length > 0 });
-  } catch (err) {
-    console.error("HAS STUDIO ERROR:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-
-// ======================
-// REGISTER
-// ======================
-app.post("/register", async (req, res) => {
-  const { name, email, password, role } = req.body;
-
-  await db.query(
-    "INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",
-    [name, email, password, role]
+/* ================= START SERVER ================= */
+(async () => {
+  db = await mysql.createConnection(dbConfig);
+  console.log("✅ MySQL connected");
+  app.listen(3000, () =>
+    console.log("🚀 Server running http://localhost:3000")
   );
+})();
 
-  res.send("OK");
-});
-
-// ======================
-// LOGIN
-// ======================
-
+/* ================= LOGIN ================= */
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
-  console.log("LOGIN ATTEMPT:", email, password);
-
   const [rows] = await db.query(
     "SELECT * FROM users WHERE email=? AND password=?",
     [email, password]
   );
 
-  console.log("RESULT:", rows);
-
-  if (!rows.length) {
-    return res.status(401).send("Login failed");
-  }
-
+  if (!rows.length) return res.status(401).send("Login failed");
   res.json(rows[0]);
 });
 
+/* ================= CEK MITRA PUNYA STUDIO ================= */
+app.get("/mitra/:id/has-studio", async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT id FROM studios WHERE mitra_id=? LIMIT 1",
+    [req.params.id]
+  );
+  res.json({ hasStudio: rows.length > 0 });
+});
 
+/* ================= ADD STUDIO (FULL) ================= */
 app.post(
   "/studios",
   upload.array("studio_images[]", 10),
   async (req, res) => {
     try {
-      console.log("BODY:", req.body);
-      console.log("FILES:", req.files);
-
       const {
         mitra_id,
         studio_name,
@@ -128,9 +81,14 @@ app.post(
         return res.status(400).json({ message: "Data tidak lengkap" });
       }
 
-      const image = req.files && req.files.length > 0
-        ? req.files[0].filename
-        : null;
+      // 🔥 PAKSA NULL JIKA KOSONG
+      const lat = latitude ? Number(latitude) : null;
+      const lng = longitude ? Number(longitude) : null;
+      const priceRange = price_range || null;
+      const desc = description || null;
+
+      // ambil 1 gambar utama
+      const image = req.files?.[0]?.filename || null;
 
       const sql = `
         INSERT INTO studios
@@ -143,72 +101,46 @@ app.post(
         studio_name,
         studio_type,
         city,
-        latitude || null,
-        longitude || null,
-        price_range,
-        description,
+        lat,
+        lng,
+        priceRange,
+        desc,
         image
       ]);
 
-      res.json({ success: true, studio_id: result.insertId });
+      res.json({
+        success: true,
+        studio_id: result.insertId
+      });
 
     } catch (err) {
-      console.error("❌ INSERT ERROR DETAIL:", err);
-      res.status(500).json({ message: err.message });
+      console.error("❌ INSERT ERROR:", err);
+      res.status(500).json({ message: "Gagal menyimpan studio" });
     }
   }
 );
 
-// ======================
-
-// ======================
-// GET STUDIOS (CATEGORY + CITY)
-// ======================
+/* ================= GET STUDIOS (CUSTOMER) ================= */
 app.get("/studios", async (req, res) => {
-  try {
-    const { category, city } = req.query;
+  const { category, city } = req.query;
 
-    let sql = "SELECT * FROM studios WHERE status='active'";
-const params = [];
+  let sql = `
+    SELECT s.*, 
+    (SELECT image FROM studio_images si WHERE si.studio_id=s.id LIMIT 1) AS image
+    FROM studios s
+    WHERE s.status='active'
+  `;
+  const params = [];
 
-if (category) {
-  sql += " AND LOWER(category) = ?";
-  params.push(category.toLowerCase());
-}
-
-if (city) {
-  sql += " AND LOWER(city) = ?";
-  params.push(city.toLowerCase());
-}
-
-
-    const [rows] = await db.query(sql, params);
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json(err);
+  if (category) {
+    sql += " AND LOWER(s.category)=?";
+    params.push(category.toLowerCase());
   }
+  if (city) {
+    sql += " AND LOWER(s.city)=?";
+    params.push(city.toLowerCase());
+  }
+
+  const [rows] = await db.query(sql, params);
+  res.json(rows);
 });
-
-// ======================
-// GET STUDIO DETAIL
-// ======================
-app.get("/studios/:id", async (req, res) => {
-  const [rows] = await db.query(
-    "SELECT * FROM studios WHERE id=?",
-    [req.params.id]
-  );
-
-  if (!rows.length) return res.status(404).send("Not found");
-  res.json(rows[0]);
-});
-
-// ======================
-// ADD STUDIO
-// ======================
-
-
-process.on("unhandledRejection", err => {
-  console.error("UNHANDLED:", err);
-});
-
