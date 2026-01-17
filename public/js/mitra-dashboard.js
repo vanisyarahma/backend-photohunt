@@ -3,7 +3,7 @@ const formatRupiah = (number) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(number);
 
 function renderEmptyState(container, message) {
-    if(container) {
+    if (container) {
         container.innerHTML = `<div class="mitra-dashboard-list-item mitra-dashboard-item-simple" style="justify-content:center;"><span class="text-italic text-sm">${message}</span></div>`;
     }
 }
@@ -12,11 +12,11 @@ function renderEmptyState(container, message) {
 async function fetchDashboardData(mitraId) {
     try {
         console.log("Fetching data for Mitra ID:", mitraId);
-        
+
         // Panggil Endpoint Backend (Pastikan backend kamu jalan di port 3000)
         // Endpoint ini harus kamu buat di server.js: app.get('/mitra/dashboard/:id', ...)
-        const response = await fetch(`http://localhost:3000/mitra/dashboard/${mitraId}`);
-        
+        const response = await fetch(`/mitra/dashboard/${mitraId}`);
+
         if (!response.ok) {
             throw new Error("Gagal mengambil data dashboard");
         }
@@ -41,7 +41,7 @@ function renderDashboard(data) {
 
     // 2. Notifikasi
     const badge = document.getElementById("ph-notif-badge");
-    if(badge && data.stats.cancellation > 0) {
+    if (badge && data.stats.cancellation > 0) {
         badge.style.display = "block";
         badge.textContent = `${data.stats.cancellation} baru`;
         document.getElementById("ph-card-cancel").classList.add("accent-orange");
@@ -49,7 +49,7 @@ function renderDashboard(data) {
 
     // 3. List Pengajuan Cancel
     const listCancel = document.getElementById("ph-list-cancel-requests");
-    if(listCancel) {
+    if (listCancel) {
         listCancel.innerHTML = "";
         if (!data.cancellationRequests || data.cancellationRequests.length === 0) {
             renderEmptyState(listCancel, "Tidak ada pengajuan");
@@ -57,13 +57,19 @@ function renderDashboard(data) {
             // Tampilkan Max 2 saja biar gak kepanjangan
             data.cancellationRequests.slice(0, 2).forEach(item => {
                 listCancel.innerHTML += `
-                <div class="mitra-dashboard-list-item mitra-dashboard-item-orange">
+                <div class="mitra-dashboard-list-item mitra-dashboard-item-orange" style="cursor:pointer;" onclick="window.location.href='pembatalan-mitra.html'">
                     <div class="mitra-dashboard-item-top">
                         <span class="mitra-dashboard-location">${item.location}</span>
                         <span class="mitra-dashboard-tag">ID: ${item.id}</span>
                     </div>
                     <div class="mitra-dashboard-text-row">${item.package} • ${item.date}</div>
-                    <div class="mitra-dashboard-text-row text-danger">Refund: ${formatRupiah(item.refund)}</div>
+                    <div class="mitra-dashboard-item-bottom" style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                        <span class="mitra-dashboard-text-row text-danger" style="margin:0;">Refund: ${formatRupiah(item.refund)}</span>
+                        ${item.status === 'pending' ?
+                        `<button class="mitra-dashboard-btn-primary" style="padding: 4px 12px; font-size: 12px; font-weight:700;" onclick="event.stopPropagation(); handleQuickRefund('${item.id}')">Konfirmasi</button>` :
+                        `<span class="text-sm text-italic" style="color:#666">${item.status === 'refunded' ? 'Selesai' : 'Hangus'}</span>`
+                    }
+                    </div>
                 </div>`;
             });
         }
@@ -71,7 +77,7 @@ function renderDashboard(data) {
 
     // 4. List Jadwal (Upcoming)
     const listSchedule = document.getElementById("ph-list-schedule");
-    if(listSchedule) {
+    if (listSchedule) {
         listSchedule.innerHTML = "";
         if (!data.upcomingSchedule || data.upcomingSchedule.length === 0) {
             renderEmptyState(listSchedule, "Belum ada jadwal");
@@ -92,14 +98,14 @@ function renderDashboard(data) {
 
     // 5. List Riwayat (History)
     const listHistory = document.getElementById("ph-list-history");
-    if(listHistory) {
+    if (listHistory) {
         listHistory.innerHTML = "";
         if (!data.historyCancellations || data.historyCancellations.length === 0) {
             renderEmptyState(listHistory, "Riwayat kosong");
         } else {
             data.historyCancellations.forEach(item => {
                 listHistory.innerHTML += `
-                <div class="mitra-dashboard-list-item mitra-dashboard-item-red">
+                <div class="mitra-dashboard-list-item mitra-dashboard-item-red" style="cursor:pointer;" onclick="window.location.href='pembatalan-mitra.html?tab=refunded'">
                     <div class="mitra-dashboard-item-top"><span class="mitra-dashboard-location">${item.location}</span></div>
                     <div class="mitra-dashboard-text-row text-italic">Alasan: ${item.reason}</div>
                 </div>`;
@@ -110,12 +116,12 @@ function renderDashboard(data) {
 
 // --- EVENT LISTENERS ---
 document.addEventListener("DOMContentLoaded", () => {
-    
+
     // 1. CEK LOGIN
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!currentUser || currentUser.role !== 'mitra') {
         alert("Anda belum login sebagai Mitra!");
-        window.location.href = "login.html";
+        window.location.href = "../login.html";
         return;
     }
 
@@ -125,13 +131,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. NAVIGASI TOMBOL
     const setLink = (id, url) => {
         const el = document.getElementById(id);
-        if(el) el.onclick = () => window.location.href = url;
+        if (el) el.onclick = () => window.location.href = url;
     };
 
     setLink("ph-card-today", "reservasi-mitra.html");
     setLink("ph-card-pending", "reservasi-mitra.html");
     setLink("ph-card-revenue", "transaksi-mitra.html");
-    
+
     setLink("ph-action-studio", "kelola-studio.html");
     setLink("ph-action-reservation", "reservasi-mitra.html");
     setLink("ph-action-transaction", "transaksi-mitra.html");
@@ -139,3 +145,26 @@ document.addEventListener("DOMContentLoaded", () => {
     setLink("ph-card-cancel", "pembatalan-mitra.html");
     setLink("ph-btn-view-all-cancel", "pembatalan-mitra.html");
 });
+
+async function handleQuickRefund(cancellationId) {
+    if (!confirm("Konfirmasi bahwa refund telah diproses ke rekening pelanggan?")) return;
+
+    try {
+        const res = await fetch(`/cancellations/${cancellationId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'refunded' })
+        });
+
+        if (res.ok) {
+            alert("Refund berhasil dikonfirmasi!");
+            const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+            fetchDashboardData(currentUser.id);
+        } else {
+            alert("Gagal memperbarui status");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat menghubungi server");
+    }
+}

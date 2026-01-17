@@ -28,56 +28,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const dbName = 'PhotoHuntDB';
     const dbVersion = 2;
 
-    const sampleStudios = [
-    {
-        id: 1,
-        type: 'photostudio',
-        name: 'Selfie Time, Mall Pulo Gadung',
-        location: 'Jakarta',
-        capacity: 4,
-        photos: [
-            'images/selfietime.jpg',
-            'images/selfietime2.jpg',
-            'images/selfietime3.jpg'
-        ],
-        description: 'Studio selfie modern.'
-    },
-    {
-        id: 2,
-        type: 'photostudio',
-        name: 'Dirtyline Studio, Tambun',
-        location: 'Bekasi',
-        capacity: 6,
-        photos: [
-            'images/dirtyline1.jpg',
-            'images/dirtyline2.jpg'
-        ],
-        description: 'Ruang foto kreatif.'
-    },
-    {
-        id: 3,
-        type: 'photobox',
-        name: 'Angel Photobox, Bekasi Timur',
-        location: 'Bekasi',
-        capacity: 2,
-        photos: [
-            'images/angel1.jpg'
-        ],
-        description: 'Photobox cepat & murah.'
-    },
-    {
-        id: 4,
-        type: 'photobox',
-        name: 'Kawaii Box, Pantai Indah Kapuk',
-        location: 'Jakarta',
-        capacity: 3,
-        photos: [
-            'images/kawaii1.jpg',
-            'images/kawaii2.jpg'
-        ],
-        description: 'Tema Jepang lucu.'
-    }
-];
+//     const sampleStudios = [
+//     {
+//         id: 1,
+//         type: 'photostudio',
+//         name: 'Selfie Time, Mall Pulo Gadung',
+//         location: 'Jakarta',
+//         capacity: 4,
+//         photos: [
+//             'images/selfietime.jpg',
+//             'images/selfietime2.jpg',
+//             'images/selfietime3.jpg'
+//         ],
+//         description: 'Studio selfie modern.'
+//     },
+//     {
+//         id: 2,
+//         type: 'photostudio',
+//         name: 'Dirtyline Studio, Tambun',
+//         location: 'Bekasi',
+//         capacity: 6,
+//         photos: [
+//             'images/dirtyline1.jpg',
+//             'images/dirtyline2.jpg'
+//         ],
+//         description: 'Ruang foto kreatif.'
+//     },
+//     {
+//         id: 3,
+//         type: 'photobox',
+//         name: 'Angel Photobox, Bekasi Timur',
+//         location: 'Bekasi',
+//         capacity: 2,
+//         photos: [
+//             'images/angel1.jpg'
+//         ],
+//         description: 'Photobox cepat & murah.'
+//     },
+//     {
+//         id: 4,
+//         type: 'photobox',
+//         name: 'Kawaii Box, Pantai Indah Kapuk',
+//         location: 'Jakarta',
+//         capacity: 3,
+//         photos: [
+//             'images/kawaii1.jpg',
+//             'images/kawaii2.jpg'
+//         ],
+//         description: 'Tema Jepang lucu.'
+//     }
+// ];
 
 
     function initDB() {

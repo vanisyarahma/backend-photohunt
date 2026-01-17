@@ -1,41 +1,44 @@
 // --- 1. CONFIG & STATE ---
-let allReservations = []; // Menyimpan data mentah dari database
+let allReservations = [];
+let currentFilter = 'all';
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (!currentUser || currentUser.role !== 'mitra') {
+        window.location.href = '../login.html';
+        return;
+    }
     fetchReservations();
 });
 
 // --- 2. FUNGSI FETCH DATA (BACKEND READY) ---
-function fetchReservations() {
-    // Simulasi Data Database (Struktur JSON standar backend)
-    const dummyDatabase = [
-        {
-            id: "res_004",
-            studio_name: "Selfie Time, Mal Lippo Cikarang",
-            status: "pending_confirmation",
-            date: "2025-12-21",
-            time: "11:00",
-            package_name: "Paket Couple",
-            pax: 2,
-            total_price: 45000
-        },
-    ];
+async function fetchReservations() {
+    try {
+        const res = await fetch(`/mitra/bookings/${currentUser.id}`);
+        if (!res.ok) throw new Error("Gagal mengambil data");
 
-    // --- SECTION CONNECT KE REAL BACKEND ---
-    /* fetch('/api/mitra/reservations')
-        .then(res => res.json())
-        .then(data => {
-            allReservations = data;
-            renderReservations(allReservations);
-        })
-        .catch(err => console.error(err));
-    */
+        const data = await res.json();
+        // Mapping field dari DB ke format yang diinginkan UI jika perlu
+        allReservations = data.map(item => ({
+            id: item.id,
+            studio_name: item.studio_name,
+            status: item.status,
+            date: item.booking_date,
+            time: item.booking_time,
+            package_name: item.package_name || "Paket Custom",
+            pax: item.pax || 1,
+            total_price: item.total_price,
+            customer_name: item.customer_name,
+            proof_image: item.proof_image
+        }));
 
-    // Sementara pakai dummy dulu
-    setTimeout(() => {
-        allReservations = dummyDatabase;
-        renderReservations(allReservations);
-    }, 500); // Delay dikit biar kelihatan loadingnya
+        // Render sesuai filter yang sedang aktif
+        applyCurrentFilter();
+    } catch (err) {
+        console.error(err);
+        document.getElementById('reservation-container').innerHTML =
+            '<div class="loading-state">Gagal memuat data reservasi.</div>';
+    }
 }
 
 // --- 3. LOGIC RENDER ---
@@ -49,24 +52,18 @@ function renderReservations(data) {
     }
 
     data.forEach(res => {
-        // Helper untuk format Rupiah
         const formattedPrice = new Intl.NumberFormat('id-ID', {
             style: 'currency', currency: 'IDR', minimumFractionDigits: 0
         }).format(res.total_price);
 
-        // Helper untuk format Tanggal
         const dateObj = new Date(res.date);
         const formattedDate = dateObj.toLocaleDateString('id-ID', {
             day: '2-digit', month: 'short', year: 'numeric'
         });
 
-        // Logic menentukan Kelas & Label Badge berdasarkan Status
         const statusConfig = getStatusConfig(res.status);
+        const actionButtons = getActionButtons(res.status, res.id, res.proof_image);
 
-        // Logic menentukan Tombol apa yang muncul di bawah
-        const actionButtons = getActionButtons(res.status, res.id);
-
-        // Template Literal HTML
         const cardHTML = `
                 <div class="mitra-card">
                   <div class="mitra-card-header">
@@ -74,10 +71,10 @@ function renderReservations(data) {
                       <span class="mitra-studio-name">${res.studio_name}</span>
                       <span class="mitra-badge ${statusConfig.className}">${statusConfig.label}</span>
                     </div>
-                    <button class="mitra-btn-detail" onclick="viewDetail('${res.id}')">Detail</button>
+                    <div class="mitra-customer-name">Pelanggan: <strong>${res.customer_name}</strong></div>
                   </div>
 
-                  <div class="mitra-order-id">ID: ${res.id}</div>
+                  <div class="mitra-order-id">ID Booking: #${res.id}</div>
 
                   <div class="mitra-info-grid">
                     <div class="mitra-info-item">
@@ -116,79 +113,90 @@ function renderReservations(data) {
 
 function getStatusConfig(status) {
     switch (status) {
-        case 'pending_confirmation': return { className: 'warning', label: 'Menunggu Konfirmasi' };
-        case 'pending_payment': return { className: 'info', label: 'Menunggu Pembayaran' };
+        case 'pending': return { className: 'warning', label: 'Menunggu Konfirmasi' };
         case 'confirmed': return { className: 'success', label: 'Terkonfirmasi' };
         case 'completed': return { className: 'done', label: 'Selesai' };
+        case 'rejected': return { className: 'danger', label: 'Ditolak' };
         case 'cancelled': return { className: 'danger', label: 'Dibatalkan' };
         default: return { className: 'secondary', label: status };
     }
 }
 
-function getActionButtons(status, id) {
-    // Tombol Chat selalu ada (opsional), tombol lain tergantung status
+function getActionButtons(status, id, proofImage) {
     const btnChat = `<button class="btn-outline" onclick="openChat('${id}')">Chat</button>`;
+    const btnProof = proofImage ? `<button class="btn-outline" style="border-color:#6366f1; color:#6366f1;" onclick="viewProof('${proofImage}')">Lihat Bukti</button>` : '';
 
-    if (status === 'pending_confirmation') {
+    if (status === 'pending') {
         return `
-                <button class="btn-outline-danger" onclick="rejectReservation('${id}')">Tolak</button>
-                <button class="btn-success" onclick="acceptReservation('${id}')">Terima</button>
+                <button class="btn-outline-danger" onclick="updateStatus('${id}', 'rejected')">Tolak</button>
+                <button class="btn-success" onclick="updateStatus('${id}', 'confirmed')">Terima</button>
+                ${btnProof}
                 ${btnChat}
             `;
     } else if (status === 'confirmed') {
         return `
+                ${btnProof}
                 ${btnChat}
-                <button class="btn-primary" onclick="completeReservation('${id}')">Selesai Booking</button>
+                <button class="btn-primary" onclick="updateStatus('${id}', 'completed')">Selesai Booking</button>
             `;
     } else {
-        // Untuk status Selesai, Dibatalkan, atau Menunggu Bayar, mungkin cuma Chat atau kosong
-        return btnChat;
+        return `${btnProof} ${btnChat}`;
     }
 }
 
 // --- 5. INTERACTION LOGIC (Filtering & Actions) ---
 
 function filterData(statusKey, btnElement) {
-    // Update UI Tab Active
     document.querySelectorAll('.mitra-tab').forEach(b => b.classList.remove('active'));
     btnElement.classList.add('active');
+    currentFilter = statusKey;
+    applyCurrentFilter();
+}
 
-    // Filter Data
-    if (statusKey === 'all') {
+function applyCurrentFilter() {
+    if (currentFilter === 'all') {
         renderReservations(allReservations);
     } else {
-        const filtered = allReservations.filter(item => item.status === statusKey);
+        const filtered = allReservations.filter(item => item.status === currentFilter);
         renderReservations(filtered);
     }
 }
 
-// --- 6. ACTION HANDLERS (Simulasi Backend Call) ---
+// --- 6. ACTION HANDLERS ---
 
-function viewDetail(id) {
-    console.log("Navigasi ke detail:", id);
-    // window.location.href = `/reservasi/detail/${id}`;
-}
+async function updateStatus(id, newStatus) {
+    let actionLabel = "";
+    if (newStatus === 'confirmed') actionLabel = "menerima";
+    if (newStatus === 'rejected') actionLabel = "menolak";
+    if (newStatus === 'completed') actionLabel = "menyelesaikan";
 
-function acceptReservation(id) {
-    if (confirm(`Terima reservasi ${id}?`)) {
-        // Panggil API Backend disini
-        alert("Reservasi diterima!");
-        // Refresh data...
+    if (!confirm(`Apakah Anda yakin ingin ${actionLabel} reservasi #${id}?`)) return;
+
+    try {
+        const res = await fetch(`/bookings/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        if (res.ok) {
+            alert(`Reservasi berhasil diupdate menjadi ${newStatus}`);
+            fetchReservations(); // Reload data
+        } else {
+            alert("Gagal memperbarui status");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan sistem");
     }
 }
 
-function rejectReservation(id) {
-    if (confirm(`Tolak reservasi ${id}?`)) {
-        alert("Reservasi ditolak.");
-    }
-}
-
-function completeReservation(id) {
-    if (confirm(`Tandai reservasi ${id} sebagai selesai?`)) {
-        alert("Booking selesai.");
-    }
+function viewProof(imageName) {
+    const imgUrl = `/images/payments/${imageName}`;
+    window.open(imgUrl, '_blank');
 }
 
 function openChat(id) {
-    alert("Membuka chat untuk reservasi: " + id);
+    // Redirect ke chat.html
+    window.location.href = `chat.html?bookingId=${id}`;
 }

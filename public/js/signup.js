@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       // PERBAIKAN 2: Pakai alamat lengkap http://localhost:3000
-      const res = await fetch("http://localhost:3000/signup", {
+      const res = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,16 +1,18 @@
 // =====================
 // 1. SOCKET CONFIG
 // =====================
+const PAGE_TYPE = document.body.dataset.page;
 const socket = io();
 
 // =====================
 // 2. AUTH USER CHECK
 // =====================
 const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-if (!currentUser) {
-    alert("Sesi habis, silakan login ulang.");
-    window.location.href = "login.html";
+if (!currentUser || currentUser.role !== "customer") {
+  window.location.href = "login.html";
+  throw new Error("Bukan customer");
 }
+
 
 const myId = currentUser.id;
 const myName = currentUser.name || "Pengguna";
@@ -44,16 +46,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 Chat app initialized for:", myName, `(${currentUser.role})`);
 
     // SETUP TOMBOL KEMBALI
-    if (backBtn) {
-        backBtn.onclick = (e) => {
-            e.preventDefault();
-            if (currentUser.role === 'mitra') {
-                window.location.href = "mitra/mitra-dashboard.html";
-            } else {
-                window.history.back(); 
-            }
-        };
-    }
+const backBtn = document.querySelector(".back-link");
+if (backBtn) {
+  backBtn.onclick = (e) => {
+    e.preventDefault();
+    window.location.href = "customer-app.html";
+  };
+}
 
     // Load Sidebar Pertama Kali
     await loadSidebarHistory();

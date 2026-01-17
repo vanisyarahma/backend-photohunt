@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Transaksi - PhotoHunt</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
 
     <style>
         body {
@@ -17,7 +19,7 @@
         .ph-page-wrapper {
             background-color: #f5f5f5;
             min-height: 100vh;
-            padding-top: 130px; 
+            padding-top: 130px;
             padding-bottom: 50px;
             font-family: 'Inter', sans-serif;
             width: 100%;
@@ -40,42 +42,42 @@
             top: 0;
             left: 0;
             z-index: 1000;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .header-content {
-            display: flex; 
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%; 
+            width: 100%;
             max-width: 100%;
         }
 
         .logo {
-            font-weight: 700; 
-            font-size: 28px; 
-            display: flex; 
-            align-items: center; 
-            color: #000; 
+            font-weight: 700;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            color: #000;
             letter-spacing: -0.02em;
             text-decoration: none;
         }
 
         .cta-btn {
-            background: #000; 
-            color: #fff; 
+            background: #000;
+            color: #fff;
             padding: 12px 24px;
-            border-radius: 8px; 
-            border: none; 
+            border-radius: 8px;
+            border: none;
             cursor: pointer;
-            font-weight: 500; 
-            font-size: 14px; 
+            font-weight: 500;
+            font-size: 14px;
             transition: all 0.3s ease;
         }
-        
-        .cta-btn:hover { 
-            transform: translateY(-1px); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+
+        .cta-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .navigation-bar {
@@ -137,21 +139,21 @@
             background: #ffffff;
             border-radius: 12px;
             border: 1px solid #e0e0e0;
-            width: 95%; 
+            width: 95%;
             max-width: 1400px;
             height: 173px;
             position: relative;
             flex-shrink: 0;
             transition: all 0.2s ease;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
             box-sizing: border-box;
         }
-        
+
         .search2:hover {
             border-color: #000000;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
         }
 
         .studio-name {
@@ -161,7 +163,7 @@
             position: absolute;
             left: 25px;
             top: 20px;
-            width: calc(100% - 250px); 
+            width: calc(100% - 250px);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -186,28 +188,33 @@
         }
 
         .status-bg {
-            border-radius: 20px;
-            width: 180px;
-            height: 28px;
+            border-radius: 6px;
+            /* Kotak sedikit membulat agar lebih tegas */
+            width: 160px;
+            height: 32px;
             position: absolute;
             right: 25px;
             top: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .status-text {
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 800;
             position: absolute;
             right: 25px;
-            width: 180px;
+            width: 160px;
+            height: 32px;
             text-align: center;
-            top: 27px;
+            top: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2;
+            z-index: 10;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            pointer-events: none;
+            /* Klik tembus ke card */
         }
 
         .btn-bayar-mini {
@@ -224,74 +231,106 @@
             z-index: 5;
             transition: 0.2s;
         }
-        .btn-bayar-mini:hover { background: #333; transform: scale(1.05); }
+
+        .btn-bayar-mini:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
 
         .location-container {
             position: absolute;
-            right: 250px;
+            right: 25px;
             top: 100px;
+            /* Sejajar dengan package-name */
             text-align: right;
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 8px;
             color: rgba(0, 0, 0, 0.6);
+            width: 300px;
         }
 
         .date-container {
             position: absolute;
-            right: 250px;
-            top: 132px;
+            right: 25px;
+            top: 130px;
+            /* Sejajar dengan price-text */
             text-align: right;
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 8px;
+            color: rgba(0, 0, 0, 0.0);
+            /* Sembunyikan jika diinginkan, tapi diminta posisi sejajar */
             color: rgba(0, 0, 0, 0.6);
+            width: 300px;
         }
 
-        .location-text, .date-text { font-size: 16px; font-weight: 400; }
-        .icon-svg { width: 18px; height: 18px; opacity: 0.6; }
+        .location-text,
+        .date-text {
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .icon-svg {
+            width: 18px;
+            height: 18px;
+            opacity: 0.6;
+        }
 
         @media (max-width: 900px) {
-            .location-container, .date-container { display: none; }
-            .studio-name { width: calc(100% - 200px); }
+
+            .location-container,
+            .date-container {
+                display: none;
+            }
+
+            .studio-name {
+                width: calc(100% - 200px);
+            }
         }
     </style>
 </head>
 
 <body style="margin: 0; padding: 0; background-color: #f5f5f5;">
 
-<div class="ph-page-wrapper">
+    <div class="ph-page-wrapper">
 
-    <header>
-        <div class="header-content">
-            <a href="#" class="logo">
-                PhotoHunt 
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px;">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-            </a>
-            <button class="cta-btn">Call to action</button>
-        </div>
-    </header>
-
-    <div class="navigation-bar">
-        <button class="back-btn" onclick="history.back()">
-            <div class="back-icon-circle">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
+        <header>
+            <div class="header-content">
+                <a href="customer-app.html" class="logo">
+                    PhotoHunt
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px;">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                        </path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </a>
+                <button class="cta-btn" onclick="window.location.href='chat.html'">Chat</button>
             </div>
-        </button>
-        <h1 class="page-title">Riwayat Transaksi</h1>
+        </header>
+
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="window.location.href='customer-app.html'">
+                <div class="back-icon-circle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </div>
+            </button>
+            <h1 class="page-title">Riwayat Transaksi</h1>
+        </div>
+
+        <div id="card-container" class="card-list-container"></div>
+
     </div>
 
-    <div id="card-container" class="card-list-container"></div>
-
-</div>
-
-     <script src="/photohunt-backend/public/js/history.js" defer></script>
+    <script src="js/history.js" defer></script>
 
 </body>
+
 </html>

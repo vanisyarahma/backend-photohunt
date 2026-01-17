@@ -7,7 +7,8 @@
 // if (user && user.role === 'mitra') {
 //   window.location.href = 'mitra-dashboard.html';
 // }
-const API_BASE_URL = "";
+const API_BASE_URL = "http://localhost:3000";
+
 
 const scope = {
   category: "photobox",

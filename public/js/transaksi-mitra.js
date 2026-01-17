@@ -1,34 +1,26 @@
 
 document.addEventListener("DOMContentLoaded", () => {
-    // --- DATA DUMMY (Untuk Test Tampilan) ---
-    // Nanti kalau Backend sudah connect, array ini bisa dikosongkan/dihapus
-    const dummyData = [
-        {
-            transaction_id: "res_002",
-            studio_name: "Selfie Time, Mal Lippo Cikarang",
-            amount: 25000,
-            status: "lunas",
-            created_at: "2025-12-18T10:00:00",
-        },
-    ];
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!currentUser || currentUser.role !== 'mitra') {
+        window.location.href = "../login.html";
+        return;
+    }
 
-    // Panggil fungsi render pakai data dummy dulu
-    renderTable(dummyData);
-
-    // --- BACKEND READY CODE (Nyalakan ini nanti) ---
-    /*
-    const API_ENDPOINT = '/api/mitra/transactions'; // Ganti URL Backendmu
-    fetch(API_ENDPOINT)
-        .then(res => res.json())
-        .then(data => {
-            renderTable(data);
-        })
-        .catch(err => {
-            console.error("Gagal ambil data:", err);
-            document.getElementById('table-body').innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Gagal memuat data.</td></tr>`;
-        });
-    */
+    fetchTransactions(currentUser.id);
 });
+
+async function fetchTransactions(mitraId) {
+    try {
+        const response = await fetch(`/mitra/transactions/${mitraId}`);
+        if (!response.ok) throw new Error("Gagal mengambil data transaksi");
+
+        const data = await response.json();
+        renderTable(data);
+    } catch (err) {
+        console.error("❌ Gagal ambil data:", err);
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="6" style="text-align:center; color:red; padding:30px;">Gagal memuat data Riwayat Transaksi.</td></tr>`;
+    }
+}
 
 // Fungsi Render Utama
 function renderTable(data) {
@@ -52,35 +44,30 @@ function renderTable(data) {
         const dateObj = new Date(transaksi.created_at);
         const formattedDate = dateObj.toLocaleDateString("id-ID", {
             day: "2-digit",
-            month: "2-digit",
+            month: "long",
             year: "numeric",
         });
 
         let statusClass = "secondary";
         let statusLabel = transaksi.status;
 
+        // Backend maps to 'refund' for cancelled and 'success' for confirmed/paid/completed
         switch (transaksi.status.toLowerCase()) {
-            case "lunas":
             case "success":
-            case "selesai":
-            case "completed":
                 statusClass = "success";
                 statusLabel = "Lunas";
                 break;
             case "refund":
-            case "dikembalikan":
                 statusClass = "refund";
                 statusLabel = "Dikembalikan";
                 break;
-            case "pending":
-            case "menunggu":
-                statusClass = "warning";
-                statusLabel = "Menunggu";
-                break;
+            default:
+                statusClass = "secondary";
+                statusLabel = transaksi.status;
         }
 
         row.innerHTML = `
-                <td>${transaksi.transaction_id}</td>
+                <td>#${transaksi.transaction_id}</td>
                 <td><span style="font-weight:500;">${transaksi.studio_name}</span></td>
                 <td>${formattedDate}</td>
                 <td style="font-weight:600;">${formattedNominal}</td>
@@ -100,6 +87,6 @@ function renderTable(data) {
 }
 
 function viewDetail(id) {
-    alert("Membuka detail transaksi ID: " + id);
-    window.location.href = "/detail-transaksi.html?id=" + id;
+    // Redirect ke detail reservasi karena ID transaksi = ID Booking
+    window.location.href = "reservasi-mitra.html";
 }

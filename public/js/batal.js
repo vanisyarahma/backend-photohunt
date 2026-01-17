@@ -1,43 +1,83 @@
-        const params = new URLSearchParams(window.location.search);
-        const idReservasi = params.get("id");
-        
-        const alasanInput = document.querySelector("#alasanInput");
-        const cancelBtn = document.querySelector(".cancel-btn");
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const bookingId = params.get("bookingId") || params.get("id"); // Mendukung kedua param
 
-        document.querySelector(".back-btn").addEventListener("click", () => {
-            if (idReservasi) {
-                window.location.href = `pemesanan.html?id=${idReservasi}`;
+    const alasanInput = document.querySelector("#alasanInput");
+    const bankNameInput = document.querySelector("#bankName");
+    const accountNumberInput = document.querySelector("#accountNumber");
+    const accountNameInput = document.querySelector("#accountName");
+    const cancelBtn = document.querySelector(".cancel-btn");
+    const backBtn = document.querySelector(".back-btn");
+
+    if (backBtn) {
+        backBtn.onclick = (e) => {
+            e.preventDefault();
+            console.log("Back button clicked, bookingId:", bookingId);
+            if (bookingId) {
+                window.location.href = `pemesanan.html?bookingId=${bookingId}`;
             } else {
                 window.location.href = "history.html";
             }
-        });
+        };
+    }
 
-        alasanInput.addEventListener("input", () => {
-            const text = alasanInput.value.trim();
-            
-            if (text.length > 0) {
-                cancelBtn.disabled = false;
-            } else {
-                cancelBtn.disabled = true;
+    // Validasi tombol: alasan dan rekening wajib diisi
+    const validateForm = () => {
+        if (!alasanInput || !bankNameInput || !accountNumberInput || !accountNameInput || !cancelBtn) return;
+
+        const isAlasanFilled = alasanInput.value.trim().length > 0;
+        const isBankFilled = bankNameInput.value.trim().length > 0;
+        const isAccNumberFilled = accountNumberInput.value.trim().length > 0;
+        const isAccNameFilled = accountNameInput.value.trim().length > 0;
+
+        cancelBtn.disabled = !(isAlasanFilled && isBankFilled && isAccNumberFilled && isAccNameFilled);
+    };
+
+    if (alasanInput && bankNameInput && accountNumberInput && accountNameInput) {
+        [alasanInput, bankNameInput, accountNumberInput, accountNameInput].forEach(el => {
+            el.addEventListener("input", validateForm);
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.onclick = async (e) => {
+            e.preventDefault();
+            if (!bookingId) {
+                alert("ID Reservasi tidak valid. Mohon kembali ke halaman sebelumnya.");
+                return;
             }
-        });
 
-        cancelBtn.addEventListener("click", () => {
-            const alasan = alasanInput.value.trim();
-            
             const dataPembatalan = {
-                id_reservasi: idReservasi,
-                alasan: alasan,
-                timestamp: new Date().toISOString()
+                reason: alasanInput.value.trim(),
+                bank_name: bankNameInput.value.trim(),
+                account_number: accountNumberInput.value.trim(),
+                account_name: accountNameInput.value.trim()
             };
-
-            console.log("Mengirim data pembatalan ke server:", dataPembatalan);
 
             cancelBtn.innerHTML = "Memproses...";
             cancelBtn.disabled = true;
 
-            setTimeout(() => {
-                alert("Pemesanan berhasil dibatalkan.");
-                window.location.href = "history.html"; 
-            }, 800);
-        });
+            try {
+                const res = await fetch(`/bookings/${bookingId}/cancel-request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataPembatalan)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    alert(result.message);
+                    window.location.href = "history.html";
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Gagal memproses pembatalan: " + err.message);
+                cancelBtn.innerHTML = "BATALKAN PESANAN";
+                cancelBtn.disabled = false;
+            }
+        };
+    }
+});

@@ -1,3 +1,4 @@
+
 class Utils {
     static formatCurrency(amount) {
         return new Intl.NumberFormat('id-ID', {
@@ -64,211 +65,6 @@ class Utils {
         return options[value] || 'Jumlah orang';
     }
 }
-// class StudioDatabase {
-//     constructor() {
-//         this.storageKey = 'photohunt_studio_data_v2'; 
-//         this.initDatabase();
-//     }
-
-//     initDatabase() {
-//         if (!localStorage.getItem(this.storageKey)) {
-//             const sampleData = this.getSampleData();
-//             localStorage.setItem(this.storageKey, JSON.stringify(sampleData));
-//             console.log('Database initialized with new V2 data');
-//         }
-//     }
-
-//     getSampleData() {
-//         return {
-//             studios: {
-//                 'studio-001': {
-//                     id: 'studio-001',
-//                     name: 'Selfie Time, Mal Lippo Cikarang',
-//                     location: 'Lantai 1 Unit No.39',
-//                     address: 'Jl. MH. Thamrin Lantai 1, Cibatu, Cikarang Selatan',
-//                     city: 'Kabupaten Bekasi, Jawa Barat 17550',
-//                     description: 'Selfie Time adalah destinasi photo booth terbaik di Cikarang dengan konsep modern dan instagramable. Cocok untuk segala acara mulai dari ulang tahun, gathering, pre-wedding, hingga sekadar hangout bersama teman.',
-//                     rating: 5.0,
-//                     totalReviews: 2970,
-//                     capacity: 'Max 10 Orang',
-//                     phone: '0812-3456-7890',
-//                     whatsapp: '6281234567890', 
-//                     coordinates: '-6.247637,106.990448',
-
-//                     hours: {
-//                         weekdays: '10:00 - 21:00',
-//                         weekends: '09:00 - 22:00',
-//                         isOpen: true
-//                     },
-
-//                     gallery: [
-//                         'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-//                         'https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-//                         'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-//                         'https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-//                         'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-//                         'https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
-//                     ],
-
-//                     facilities: [
-//                         { id: 'fac-001', name: 'Wi-Fi Gratis', description: 'Internet cepat & stabil', icon: 'wifi' },
-//                         { id: 'fac-002', name: 'Backdrop Premium', description: '10+ pilihan backdrop', icon: 'image' },
-//                         { id: 'fac-003', name: 'Cetak Foto Langsung', description: 'Hasil cetak berkualitas', icon: 'printer' },
-//                         { id: 'fac-004', name: 'Lighting Professional', description: 'Ring light & softbox', icon: 'lightbulb' }
-//                     ],
-
-//                     allFacilities: [
-//                         { id: 'fac-001', name: 'Wi-Fi Gratis', description: 'Internet cepat & stabil', icon: 'wifi' },
-//                         { id: 'fac-002', name: 'Backdrop Premium', description: '10+ pilihan backdrop', icon: 'image' },
-//                         { id: 'fac-003', name: 'Cetak Foto Langsung', description: 'Hasil cetak berkualitas', icon: 'printer' },
-//                         { id: 'fac-004', name: 'Lighting Professional', description: 'Ring light & softbox', icon: 'lightbulb' },
-//                         { id: 'fac-005', name: 'AC Ruangan', description: 'Temperatur terkontrol', icon: 'default' },
-//                         { id: 'fac-006', name: 'Makeup Station', description: 'Area rias profesional', icon: 'default' },
-//                         { id: 'fac-007', name: 'Loker Penyimpanan', description: 'Aman untuk barang pribadi', icon: 'default' },
-//                         { id: 'fac-008', name: 'Minuman Gratis', description: 'Air mineral & teh', icon: 'default' }
-//                     ],
-
-//                     themes: [
-//                         'Aesthetic Pink', 'Neon Vibes', 'Vintage', 'Minimalist',
-//                         'Birthday Party', 'K-Pop Style', 'Nature', 'Romantic'
-//                     ],
-
-//                     props: [
-//                         { name: 'Kacamata Lucu', icon: 'glasses' },
-//                         { name: 'Topi & Bando', icon: 'hat' },
-//                         { name: 'Frame Foto', icon: 'frame' },
-//                         { name: 'Balon Warna-Warni', icon: 'balloon' },
-//                         { name: 'Kipas Kertas', icon: 'fan' },
-//                         { name: 'Bunga Artificial', icon: 'flower' },
-//                         { name: 'Sign Board', icon: 'sign' },
-//                         { name: 'Pom-pom', icon: 'pompom' },
-//                         { name: 'Mustache', icon: 'mustache' }
-//                     ],
-
-//                     packages: [
-//                         {
-//                             id: 'pkg-001',
-//                             name: 'Paket Basic',
-//                             price: 50000,
-//                             duration: '30 menit',
-//                             isPopular: false,
-//                             features: ['2 cetak foto 4R', '5 foto digital', '1 backdrop pilihan', 'Free properti foto']
-//                         },
-//                         {
-//                             id: 'pkg-002',
-//                             name: 'Paket Standard',
-//                             price: 85000,
-//                             duration: '60 menit',
-//                             isPopular: true,
-//                             features: ['4 cetak foto 4R', '10 foto digital', '2 backdrop pilihan', 'Free properti foto', 'Free soft file']
-//                         },
-//                         {
-//                             id: 'pkg-003',
-//                             name: 'Paket Premium',
-//                             price: 150000,
-//                             duration: '90 menit',
-//                             isPopular: false,
-//                             features: ['8 cetak foto 4R', 'Unlimited foto digital', 'Semua backdrop', 'Free properti foto', 'Free soft file & video']
-//                         },
-//                         {
-//                             id: 'pkg-004',
-//                             name: 'Paket Family',
-//                             price: 200000,
-//                             duration: '120 menit',
-//                             isPopular: false,
-//                             features: ['12 cetak foto 4R', 'Unlimited foto digital', 'Semua backdrop', 'Free properti foto', 'Free soft file & video', 'Album digital']
-//                         }
-//                     ],
-
-//                     reviews: {
-//                         summary: { 5: 2734, 4: 178, 3: 45, 2: 13, 1: 13 },
-//                         list: [
-//                             { id: 'rev-001', reviewer: 'Siti Aminah', initial: 'S', rating: 5, date: '2 hari lalu', content: 'Tempat foto yang bagus banget! Backdrop-nya lucu-lucu dan hasil fotonya keren. Pelayanannya ramah, staff nya helpful banget. Pasti balik lagi!', helpful: 24 },
-//                             { id: 'rev-002', reviewer: 'Budi Santoso', initial: 'B', rating: 5, date: '1 minggu lalu', content: 'Sangat puas! Lighting-nya bagus, hasil foto langsung oke. Harga juga terjangkau. Recommended buat yang mau foto bareng teman-teman.', helpful: 18 },
-//                             { id: 'rev-003', reviewer: 'Dewi Lestari', initial: 'D', rating: 4, date: '2 minggu lalu', content: 'Tempatnya instagramable, staff helpful. Backdrop nya banyak pilihan dan keren-keren. Cuma kadang agak rame jadi harus antri.', helpful: 12 }
-//                         ]
-//                     }
-//                 }
-//             },
-//             users: {
-//                 'user-001': {
-//                     id: 'user-001',
-//                     name: 'John Doe',
-//                     email: 'john@example.com',
-//                     phone: '081234567890',
-//                     bookings: []
-//                 }
-//             },
-//             bookings: [],
-//             notifications: [
-//                 {
-//                     id: 'notif-001',
-//                     userId: 'user-001',
-//                     title: 'Promo Weekend 20%',
-//                     message: 'Dapatkan diskon 20% untuk booking hari Sabtu & Minggu',
-//                     read: false,
-//                     timestamp: new Date().toISOString()
-//                 }
-//             ]
-//         };
-//     }
-
-//     getStudio(studioId) {
-//         const data = JSON.parse(localStorage.getItem(this.storageKey));
-//         return data?.studios?.[studioId] || null;
-//     }
-
-//     createStudio(studioData) {
-//         const data = JSON.parse(localStorage.getItem(this.storageKey));
-//         const newId = `studio-${Date.now()}`;
-//         studioData.id = newId;
-//         data.studios[newId] = studioData;
-//         localStorage.setItem(this.storageKey, JSON.stringify(data));
-//         return newId;
-//     }
-
-//     updateStudio(studioId, updates) {
-//         const data = JSON.parse(localStorage.getItem(this.storageKey));
-//         if (data?.studios?.[studioId]) {
-//             data.studios[studioId] = { ...data.studios[studioId], ...updates };
-//             localStorage.setItem(this.storageKey, JSON.stringify(data));
-//             return true;
-//         }
-//         return false;
-//     }
-
-//     getUser(userId) {
-//         const data = JSON.parse(localStorage.getItem(this.storageKey));
-//         return data?.users?.[userId] || null;
-//     }
-
-//     createBooking(bookingData) {
-//         const data = JSON.parse(localStorage.getItem(this.storageKey));
-//         const newId = `booking-${Date.now()}`;
-//         bookingData.id = newId;
-//         bookingData.status = 'pending';
-//         bookingData.createdAt = new Date().toISOString();
-//         data.bookings.push(bookingData);
-//         localStorage.setItem(this.storageKey, JSON.stringify(data));
-//         return newId;
-//     }
-
-//     getUnreadNotifications(userId) {
-//         const data = JSON.parse(localStorage.getItem(this.storageKey));
-//         return data?.notifications?.filter(notif => 
-//             notif.userId === userId && !notif.read
-//         ) || [];
-//     }
-
-//     markNotificationAsRead(notificationId) {
-//         const data = JSON.parse(localStorage.getItem(this.storageKey));
-//         const notification = data?.notifications?.find(n => n.id === notificationId);
-//         if (notification) {
-//             notification.read = true;
-//             localStorage.setItem(this.storageKey, JSON.stringify(data));
-//         }
-//     }
-// }
 
 class GalleryManager {
     constructor(app) {
@@ -395,96 +191,9 @@ class TabManager {
 
         if (tabName === 'packages') {
             this.app.renderPackages();
+        } else if (tabName === 'facilities') {
+            this.app.renderFacilities();
         }
-    }
-
-    renderFacilities() {
-        const mainFacilitiesContainer = document.getElementById('mainFacilities');
-        const allFacilitiesContainer = document.getElementById('allFacilities');
-
-        if (mainFacilitiesContainer) mainFacilitiesContainer.innerHTML = '';
-        if (allFacilitiesContainer) allFacilitiesContainer.innerHTML = '';
-
-        this.app.currentStudio.facilities.slice(0, 4).forEach(facility => {
-            if (mainFacilitiesContainer) mainFacilitiesContainer.appendChild(this.createFacilityCard(facility));
-        });
-
-        this.app.currentStudio.allFacilities.forEach(facility => {
-            if (allFacilitiesContainer) allFacilitiesContainer.appendChild(this.createFacilityCard(facility));
-        });
-    }
-
-    createFacilityCard(facility) {
-        const card = document.createElement('div');
-        card.className = 'ds-facility-card';
-
-        const content = document.createElement('div');
-        content.className = 'ds-facility-content';
-
-        const title = document.createElement('div');
-        title.className = 'ds-card-title';
-        title.textContent = facility.name;
-
-        const desc = document.createElement('div');
-        desc.className = 'ds-small-text';
-        desc.textContent = facility.description;
-
-        content.appendChild(title);
-        content.appendChild(desc);
-
-        const iconDiv = document.createElement('div');
-        iconDiv.className = 'ds-facility-icon';
-        card.appendChild(iconDiv);
-
-        card.appendChild(content);
-
-        return card;
-    }
-
-    renderThemes() {
-        const themesContainer = document.getElementById('themesContainer');
-        if (!themesContainer) return;
-
-        themesContainer.innerHTML = '';
-
-        this.app.currentStudio.themes.forEach(theme => {
-            const chip = document.createElement('span');
-            chip.style.cssText = `
-                background: var(--ds-black); 
-                color: white; 
-                padding: 8px 16px; 
-                border-radius: 100px; 
-                font-size: 14px;
-                display: inline-block;
-                margin: 4px;
-            `;
-            chip.textContent = theme;
-            themesContainer.appendChild(chip);
-        });
-    }
-
-    renderProps() {
-        const propsContainer = document.getElementById('propsContainer');
-        if (!propsContainer) return;
-
-        propsContainer.innerHTML = '';
-
-        this.app.currentStudio.props.forEach(prop => {
-            const card = document.createElement('div');
-            card.className = 'ds-facility-card';
-            card.style.padding = '12px';
-
-            const iconDiv = document.createElement('div');
-            iconDiv.className = 'ds-facility-icon';
-
-            const name = document.createElement('span');
-            name.className = 'ds-small-text';
-            name.textContent = prop.name;
-
-            card.appendChild(iconDiv);
-            card.appendChild(name);
-            propsContainer.appendChild(card);
-        });
     }
 }
 
@@ -548,14 +257,14 @@ class BookingManager {
         // LOGIC PINTAR:
         // Kalau ada 'mitra_id' (ID 8), pakai itu buat chat.
         // Kalau apes gak ada, terpaksa pakai 'id' studio (ID 13).
-        const partnerId = this.app.currentStudio.mitra_id || this.app.currentStudio.id; 
-        
+        const partnerId = this.app.currentStudio.mitra_id || this.app.currentStudio.id;
+
         const partnerName = encodeURIComponent(this.app.currentStudio.name);
         // Bawa foto pertama sebagai foto profil chat (kalau ada)
-        const partnerPhoto = encodeURIComponent(this.app.currentStudio.gallery?.[0] || ''); 
-        
+        const partnerPhoto = encodeURIComponent(this.app.currentStudio.gallery?.[0] || '');
+
         console.log(`Membuka Chat Room dengan Mitra ID: ${partnerId}`);
-        
+
         // Redirect ke chat.html membawa ID yang BENAR (ID 8)
         window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_photo=${partnerPhoto}`;
     }
@@ -724,117 +433,146 @@ class StudioApp {
     }
 
     getCurrentUser() {
-        return {
-            id: 'user-001',
-            name: 'Guest User'
-        };
+        const user = localStorage.getItem("currentUser");
+        return user ? JSON.parse(user) : null;
     }
 
 
+
     init() {
+        this.currentUser = this.getCurrentUser();
+
+        if (!this.currentUser) {
+            window.location.href = "login.html";
+            return;
+        }
+
         this.galleryManager = new GalleryManager(this);
         this.tabManager = new TabManager(this);
         this.bookingManager = new BookingManager(this);
 
         this.loadStudioData();
         this.setupEventListeners();
-        this.updateNotificationCount();
     }
+
 
     async loadStudioData() {
         try {
-            console.log("Fetching ALL data to find ID:", this.currentStudioId);
-            
-            const res = await fetch(`http://localhost:3000/studios`);
-            if (!res.ok) throw new Error(`HTTP Error! Status: ${res.status}`);
+            const res = await fetch(
+                `http://localhost:3000/studios/${this.currentStudioId}/detail`
+            );
 
-            const allStudios = await res.json();
-            const studio = allStudios.find(s => s.id == this.currentStudioId);
+            if (!res.ok) throw new Error("Studio tidak ditemukan");
 
-            if (!studio) {
-                Utils.showError("Studio tidak ditemukan di database");
-                return;
-            }
+            const data = await res.json();
 
-            // --- MAPPING DATA ANTI-CRASH ---
+            // ===== MAP SCHEDULE =====
+            const schedMap = {};
+            data.schedules.forEach(s => {
+                schedMap[s.day] = s;
+            });
+
+            // ===== SATU KALI SET currentStudio (PENTING) =====
             this.currentStudio = {
-                ...studio,
-                id: studio.id,
-                mitra_id: studio.mitra_id, 
-                
-                // Pengaman Angka (Rating, Harga, Review)
-                rating: studio.rating ? Number(studio.rating) : 5.0,
-                totalReviews: studio.totalReviews ? Number(studio.totalReviews) : 0,
-                price: studio.price ? Number(studio.price) : 0,
-                
-                // Pengaman Teks
-                phone: studio.phone || "-",
-                name: studio.name || "Nama Studio Tidak Tersedia",
-                description: studio.description || "Deskripsi belum diisi",
-                location: studio.location || "-",
-                city: studio.city || "-",
+                ...data.studio,
 
-                // Pengaman Array (GAMBAR, FASILITAS, PAKET)
-                gallery: studio.image ? [studio.image] : (studio.gallery || []),
-                facilities: studio.facilities || [],
-                allFacilities: studio.allFacilities || [],
-                packages: studio.packages || [],
-                reviews: studio.reviews || { summary: {}, list: [] },
-                
-                // 🔥 FIX UTAMA DI SINI (Themes & Props)
-                // Kalau di DB kosong, kita kasih array kosong biar gak error forEach
-                themes: studio.themes || [], 
-                props: studio.props || [],   
+                gallery: data.images.map(i =>
+                    `/images/studios/${i.image}`
+                ),
 
-                // Pengaman Jam Buka
-                hours: studio.hours || { weekdays: "09:00 - 21:00", weekends: "10:00 - 22:00", isOpen: true },
+                facilities: data.facilities.map(f => f.facility),
+
+                packages: data.packages,
+
+                schedules: data.schedules,
+
+                hours: {
+                    weekdays: schedMap.senin
+                        ? `${schedMap.senin.open_time.substring(0, 5)} - ${schedMap.senin.close_time.substring(0, 5)}`
+                        : "-",
+                    weekends: schedMap.sabtu
+                        ? `${schedMap.sabtu.open_time.substring(0, 5)} - ${schedMap.sabtu.close_time.substring(0, 5)}`
+                        : "-",
+                    isOpen: true
+                }
             };
 
-            console.log("Studio Data Loaded (Super Safe Mode):", this.currentStudio);
+            console.log("✅ DETAIL STUDIO:", this.currentStudio);
+            console.log("FINAL STUDIO OBJECT:", this.currentStudio);
 
+            // ===== RENDER =====
             this.renderStudioData();
             this.galleryManager.renderGallery();
-            
-            // Sekarang fungsi-fungsi di bawah ini aman karena datanya sudah dijamin array []
-            this.tabManager.renderFacilities();
-            this.tabManager.renderThemes();
-            this.tabManager.renderProps();
             this.renderPackages();
-            this.renderReviews();
+            this.renderFacilities();
 
         } catch (err) {
-            console.error("Error loading studio details:", err);
-            Utils.showError("Gagal memuat data studio.");
+            console.error("❌ Detail Studio Error:", err);
+            Utils.showError("Gagal memuat data studio");
         }
     }
 
     renderStudioData() {
         const setText = (id, text) => {
             const el = document.getElementById(id);
-            if (el) el.textContent = text;
+            if (el) el.textContent = text ?? '-';
         };
 
-        setText('studioName', this.currentStudio.name);
-        setText('studioLocation', this.currentStudio.location);
-        setText('studioAddress', this.currentStudio.address);
-        setText('studioCity', this.currentStudio.city);
-        setText('studioDescription', this.currentStudio.description);
-        setText('studioCapacity', this.currentStudio.capacity);
+        const studio = this.currentStudio || {};
 
-        setText('phoneNumber', this.currentStudio.phone);
+        // ===== BASIC INFO =====
+        setText('studioName', studio.name);
+        setText('studioLocation', studio.location);
+        setText('studioAddress', studio.address);
+        setText('studioCity', studio.city);
+        setText('studioDescription', studio.description);
+        setText('studioCapacity', studio.capacity);
+        setText('phoneNumber', studio.phone);
 
-        setText('sidebarRating', this.currentStudio.rating.toFixed(1));
-        setText('sidebarReviewCount', this.currentStudio.totalReviews.toLocaleString() + ' ulasan');
-        setText('sidebarLocation', this.currentStudio.location);
+        // ===== RATING (ANTI ERROR) =====
+        const rating =
+            studio.rating !== null &&
+                studio.rating !== undefined &&
+                !isNaN(studio.rating)
+                ? Number(studio.rating)
+                : null;
 
-        setText('weekdayHours', this.currentStudio.hours.weekdays);
-        setText('weekendHours', this.currentStudio.hours.weekends);
-        setText('sidebarHours', `Buka: ${this.currentStudio.hours.weekdays}`);
+        const totalReviews =
+            studio.totalReviews !== null &&
+                studio.totalReviews !== undefined
+                ? Number(studio.totalReviews)
+                : 0;
 
+        setText(
+            'sidebarRating',
+            rating !== null ? rating.toFixed(1) : '-'
+        );
+
+        setText(
+            'sidebarReviewCount',
+            totalReviews > 0
+                ? totalReviews.toLocaleString() + ' ulasan'
+                : 'Belum ada ulasan'
+        );
+
+        setText('sidebarLocation', studio.location);
+
+        // ===== JAM OPERASIONAL =====
+        const hours = studio.hours || {};
+
+        setText('weekdayHours', hours.weekdays || '-');
+        setText('weekendHours', hours.weekends || '-');
+        setText(
+            'sidebarHours',
+            hours.weekdays ? `Buka: ${hours.weekdays}` : 'Jam belum tersedia'
+        );
+
+        // ===== STATUS BUKA / TUTUP =====
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
+
         if (statusDot && statusText) {
-            if (this.currentStudio.hours.isOpen) {
+            if (hours.isOpen) {
                 statusDot.style.background = '#10B981';
                 statusText.textContent = 'Buka sekarang';
             } else {
@@ -855,7 +593,8 @@ class StudioApp {
             const query = this.searchQuery.toLowerCase();
             packagesToShow = packagesToShow.filter(pkg =>
                 pkg.name.toLowerCase().includes(query) ||
-                pkg.features.some(feat => feat.toLowerCase().includes(query))
+                (pkg.description || '').toLowerCase().includes(query)
+
             );
         }
 
@@ -875,80 +614,31 @@ class StudioApp {
     }
 
     createPackageCard(pkg) {
-        const packageCard = document.createElement('div');
-        packageCard.className = `ds-package-card ${pkg.isPopular ? 'popular' : ''}`;
-        packageCard.dataset.packageId = pkg.id;
+        const card = document.createElement('div');
+        card.className = 'ds-package-card';
+        if (pkg.price >= 300000) card.classList.add('popular');
 
-        const header = document.createElement('div');
-        header.className = 'ds-package-header';
+        const priceFormatted = pkg.price
+            ? `Rp ${pkg.price.toLocaleString('id-ID')}`
+            : 'Harga belum tersedia';
 
-        const infoDiv = document.createElement('div');
+        card.innerHTML = `
+            <div class="ds-package-header">
+                <h4 class="ds-package-name">${pkg.name}</h4>
+                ${pkg.price >= 300000 ? '<span class="ds-popular-badge">Populer</span>' : ''}
+            </div>
+            <div class="ds-package-price">${priceFormatted}</div>
+            <div class="ds-body-text">
+                ${pkg.description || 'Tidak ada deskripsi paket.'}
+            </div>
+            <div class="ds-package-duration">Termasuk akses semua fasilitas</div>
+        `;
 
-        if (pkg.isPopular) {
-            const titleRow = document.createElement('div');
-            titleRow.style.cssText = 'display: flex; align-items: center; gap: 12px; margin-bottom: 8px;';
+        card.addEventListener('click', () => this.bookingManager.startBooking(pkg));
 
-            const name = document.createElement('div');
-            name.className = 'ds-package-name';
-            name.textContent = pkg.name;
-
-            const badge = document.createElement('span');
-            badge.className = 'ds-popular-badge';
-            badge.textContent = 'TERPOPULER';
-
-            titleRow.appendChild(name);
-            titleRow.appendChild(badge);
-            infoDiv.appendChild(titleRow);
-        } else {
-            const name = document.createElement('div');
-            name.className = 'ds-package-name';
-            name.textContent = pkg.name;
-            infoDiv.appendChild(name);
-        }
-
-        const price = document.createElement('div');
-        price.className = 'ds-package-price';
-        price.textContent = `Rp ${pkg.price.toLocaleString('id-ID')}`;
-
-        const duration = document.createElement('div');
-        duration.className = 'ds-package-duration';
-        duration.textContent = `Durasi: ${pkg.duration}`;
-
-        infoDiv.appendChild(price);
-        infoDiv.appendChild(duration);
-
-        header.appendChild(infoDiv);
-
-        const featuresList = document.createElement('div');
-        featuresList.className = 'ds-features-list';
-
-        pkg.features.forEach(feature => {
-            const featureItem = document.createElement('div');
-            featureItem.className = 'ds-feature-item';
-
-            const checkIcon = document.createElement('svg');
-            checkIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
-            checkIcon.setAttribute('viewBox', '0 0 24 24');
-            checkIcon.setAttribute('fill', 'none');
-            checkIcon.setAttribute('stroke', 'currentColor');
-            checkIcon.setAttribute('stroke-width', '3');
-
-            const featureText = document.createElement('span');
-            featureText.className = 'ds-small-text';
-            featureText.textContent = feature;
-
-            featureItem.appendChild(checkIcon);
-            featureItem.appendChild(featureText);
-            featuresList.appendChild(featureItem);
-        });
-
-        packageCard.appendChild(header);
-        packageCard.appendChild(featuresList);
-
-        packageCard.addEventListener('click', () => this.bookingManager.startBooking(pkg));
-
-        return packageCard;
+        return card;
     }
+
 
     renderReviews() {
         if (!this.currentStudio.reviews) return;
@@ -996,6 +686,41 @@ class StudioApp {
             starsContainer.appendChild(star);
         }
     }
+
+    renderFacilities() {
+        const mainContainer = document.getElementById("mainFacilities");
+        const allContainer = document.getElementById("allFacilities");
+
+        if (mainContainer) mainContainer.innerHTML = "";
+        if (allContainer) allContainer.innerHTML = "";
+
+        const facilities = this.currentStudio.facilities || [];
+
+        if (facilities.length === 0) {
+            const emptyMsg = `<p class="ds-body-text">Fasilitas belum tersedia</p>`;
+            if (mainContainer) mainContainer.innerHTML = emptyMsg;
+            if (allContainer) allContainer.innerHTML = emptyMsg;
+            return;
+        }
+
+        facilities.forEach((facility, index) => {
+            const item = document.createElement("div");
+            item.className = "facility-item";
+            item.innerHTML = `
+                <span class="facility-icon">✔</span>
+                <span class="facility-text">${facility}</span>
+            `;
+
+            // Masukkan ke "Fasilitas Lengkap" (Tab Fasilitas)
+            if (allContainer) allContainer.appendChild(item.cloneNode(true));
+
+            // Masukkan ke "Fasilitas Utama" (Tab Overview) max 4
+            if (mainContainer && index < 4) {
+                mainContainer.appendChild(item);
+            }
+        });
+    }
+
 
     renderRatingBars() {
         const barsContainer = document.getElementById('ratingBars');

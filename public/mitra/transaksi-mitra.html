@@ -1,214 +1,207 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Riwayat Transaksi</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Inter", "Segoe UI", sans-serif;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>Riwayat Transaksi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      body {
-        background-color: #f8f9fc;
-        color: #333;
-        padding-bottom: 40px;
-      }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Inter", "Segoe UI", sans-serif;
+    }
 
+    body {
+      background-color: #f8f9fc;
+      color: #333;
+      padding-bottom: 40px;
+    }
+
+    .mitra-header {
+      background-color: #ffffff;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid #eaeaea;
+      margin-bottom: 30px;
+    }
+
+    .mitra-back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .mitra-back-btn:hover {
+      background-color: #f0f0f0;
+    }
+
+    .mitra-back-icon {
+      width: 24px;
+      height: 24px;
+      color: #2d3748;
+    }
+
+    .mitra-header-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .mitra-transaction-page {
+      padding: 0 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .mitra-table-card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      padding: 20px;
+      border: 1px solid #f0f0f0;
+      overflow-x: auto;
+    }
+
+    .mitra-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 900px;
+    }
+
+    .mitra-table th {
+      text-align: left;
+      padding: 15px 20px;
+      color: #718096;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-bottom: 1px solid #eee;
+      white-space: nowrap;
+    }
+
+    .mitra-table td {
+      padding: 20px;
+      font-size: 0.95rem;
+      color: #2d3748;
+      vertical-align: middle;
+      border-bottom: 1px solid #f9f9f9;
+    }
+
+    .mitra-table tbody tr:hover td {
+      background-color: #fbfbfb;
+    }
+
+    .status {
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-block;
+      text-align: center;
+      min-width: 80px;
+    }
+
+    .status.success {
+      background-color: #d1fae5;
+      color: #047857;
+    }
+
+    .status.refund {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status.warning {
+      background-color: #fef3c7;
+      color: #b45309;
+    }
+
+    .status.secondary {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #718096;
+      transition: all 0.2s;
+      display: flex;
+      margin: 0 auto;
+      padding: 5px;
+      border-radius: 6px;
+    }
+
+    .icon-btn:hover {
+      color: #4f46e5;
+      background-color: #eef2ff;
+    }
+
+    @media (max-width: 600px) {
       .mitra-header {
-        background-color: #ffffff;
-        padding: 20px 30px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        border-bottom: 1px solid #eaeaea;
-        margin-bottom: 30px;
-      }
-
-      .mitra-back-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
-        border-radius: 50%;
-        transition: background 0.2s;
-      }
-
-      .mitra-back-btn:hover {
-        background-color: #f0f0f0;
-      }
-
-      .mitra-back-icon {
-        width: 24px;
-        height: 24px;
-        color: #2d3748;
-      }
-
-      .mitra-header-title {
-        font-size: 1.15rem;
-        font-weight: 600;
-        color: #2d3748;
+        padding: 15px;
       }
 
       .mitra-transaction-page {
-        padding: 0 30px;
-        max-width: 1400px;
-        margin: 0 auto;
+        padding: 0 15px;
       }
 
       .mitra-table-card {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        padding: 20px;
-        border: 1px solid #f0f0f0;
-        overflow-x: auto;
+        padding: 0;
       }
+    }
+  </style>
+</head>
 
-      .mitra-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        min-width: 900px;
-      }
+<body>
+  <div class="mitra-header">
+    <button class="mitra-back-btn" onclick="history.back()" aria-label="Kembali">
+      <svg class="mitra-back-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </button>
+    <h1 class="mitra-header-title">Riwayat Transaksi</h1>
+  </div>
 
-      .mitra-table th {
-        text-align: left;
-        padding: 15px 20px;
-        color: #718096;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border-bottom: 1px solid #eee;
-        white-space: nowrap;
-      }
-
-      .mitra-table td {
-        padding: 20px;
-        font-size: 0.95rem;
-        color: #2d3748;
-        vertical-align: middle;
-        border-bottom: 1px solid #f9f9f9;
-      }
-
-      .mitra-table tbody tr:hover td {
-        background-color: #fbfbfb;
-      }
-
-      .status {
-        padding: 6px 16px;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: inline-block;
-        text-align: center;
-        min-width: 80px;
-      }
-
-      .status.success {
-        background-color: #d1fae5;
-        color: #047857;
-      }
-
-      .status.refund {
-        background-color: #fee2e2;
-        color: #b91c1c;
-      }
-
-      .status.warning {
-        background-color: #fef3c7;
-        color: #b45309;
-      }
-
-      .status.secondary {
-        background-color: #f3f4f6;
-        color: #374151;
-      }
-
-      .icon-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #718096;
-        transition: all 0.2s;
-        display: flex;
-        margin: 0 auto;
-        padding: 5px;
-        border-radius: 6px;
-      }
-
-      .icon-btn:hover {
-        color: #4f46e5;
-        background-color: #eef2ff;
-      }
-
-      @media (max-width: 600px) {
-        .mitra-header {
-          padding: 15px;
-        }
-        .mitra-transaction-page {
-          padding: 0 15px;
-        }
-        .mitra-table-card {
-          padding: 0;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="mitra-header">
-      <button
-        class="mitra-back-btn"
-        onclick="history.back()"
-        aria-label="Kembali"
-      >
-        <svg class="mitra-back-icon" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M19 12H5M12 19l-7-7 7-7"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <h1 class="mitra-header-title">Riwayat Transaksi</h1>
+  <div class="mitra-transaction-page">
+    <div class="mitra-table-card">
+      <table class="mitra-table">
+        <thead>
+          <tr>
+            <th>ID Transaksi</th>
+            <th style="width: 30%">Studio</th>
+            <th>Tanggal</th>
+            <th>Nominal</th>
+            <th>Status</th>
+            <th style="text-align: center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 30px; color: #888">
+              Memuat data...
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  </div>
 
-    <div class="mitra-transaction-page">
-      <div class="mitra-table-card">
-        <table class="mitra-table">
-          <thead>
-            <tr>
-              <th>ID Transaksi</th>
-              <th style="width: 30%">Studio</th>
-              <th>Tanggal</th>
-              <th>Nominal</th>
-              <th>Status</th>
-              <th style="text-align: center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="table-body">
-            <tr>
-              <td
-                colspan="6"
-                style="text-align: center; padding: 30px; color: #888"
-              >
-                Memuat data...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+  <script src="../js/transaksi-mitra.js" defer></script>
 
-         <script src="/public/js/transaksi-mitra.js" defer></script>
+</body>
 
-  </body>
 </html>
