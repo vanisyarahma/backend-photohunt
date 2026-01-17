@@ -47,9 +47,7 @@
         line-height: 1.5;
       }
 
-      .mitra-dashboard-wrapper * {
-        box-sizing: border-box;
-      }
+      .mitra-dashboard-wrapper * { box-sizing: border-box; }
 
       .mitra-dashboard-wrapper .mitra-dashboard-header-section {
         background: var(--md-bg-white);
@@ -71,15 +69,21 @@
         color: var(--md-text-dark);
       }
 
+      /* STYLE TOMBOL CHAT (Gaya Link) */
       .mitra-dashboard-wrapper .mitra-dashboard-btn-profile {
+        text-decoration: none;
         background: transparent;
         border: 2px solid var(--md-text-dark);
         border-radius: 10px;
         padding: 10px 24px;
         font-size: 16px;
-        font-weight: 400;
+        font-weight: 700;
+        color: var(--md-text-dark);
         cursor: pointer;
         transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .mitra-dashboard-wrapper .mitra-dashboard-btn-profile:hover {
         background: #f3f4f6;
@@ -112,17 +116,12 @@
         flex-direction: column;
         justify-content: center;
         transition: all 0.3s ease; 
+        cursor: pointer;
       }
       
-      .mitra-dashboard-wrapper .clickable-card {
-          cursor: pointer;
-      }
-      .mitra-dashboard-wrapper .clickable-card:hover {
+      .mitra-dashboard-wrapper .mitra-dashboard-stat-card:hover {
           transform: translateY(-2px);
           box-shadow: 0px 4px 6px rgba(0,0,0,0.05);
-      }
-      .mitra-dashboard-wrapper .clickable-card:active {
-          transform: translateY(0);
       }
 
       .mitra-dashboard-wrapper .mitra-dashboard-stat-card.accent-orange {
@@ -181,7 +180,6 @@
 
       .mitra-dashboard-wrapper .bg-purple { background-color: var(--md-purple-light); }
       .mitra-dashboard-wrapper .bg-purple svg { stroke: var(--md-icon-purple); }
-
 
       .mitra-dashboard-wrapper .mitra-dashboard-badge {
         position: absolute;
@@ -362,7 +360,35 @@
         color: var(--md-text-grey);
         margin: 2px 0;
       }
+      /* Style Titik Merah */
+    #chat-notif-dot {
+        display: none; /* Sembunyi default */
+        position: absolute;
+        top: -5px;      /* Atur posisi sesuai tombol kamu */
+        right: -5px;
+        width: 12px;
+        height: 12px;
+        background-color: #ff4d4f;
+        border-radius: 50%;
+        border: 2px solid white;
+        z-index: 10;
+    }
 
+    /* Animasi Kedip-kedip */
+    .pulse-animation {
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 77, 79, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 77, 79, 0); }
+    }
+    
+    /* Pastikan tombol chat parent-nya relative */
+    .chat-btn-container {
+        position: relative; 
+        display: inline-block;
+    }
       .mitra-dashboard-wrapper .text-bold { font-weight: 700; color: var(--md-text-dark); }
       .mitra-dashboard-wrapper .text-danger { color: var(--md-danger); }
       .mitra-dashboard-wrapper .text-italic { font-style: italic; }
@@ -426,12 +452,17 @@
           <div class="mitra-dashboard-title-group">
             <div class="mitra-dashboard-heading" style="font-size: 24px; font-weight: bold;">Dashboard Mitra</div>
             <div class="mitra-dashboard-subheading" id="ph-mitra-name">
-              Selamat datang, Loading...
+              Loading Data...
             </div>
           </div>
-          <button class="mitra-dashboard-btn-profile" id="ph-btn-profile">
-            Kelola Profil
-          </button>
+          
+          <a href="../chat.html" class="mitra-dashboard-btn-profile">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Chat
+          </a>
+          <span id="chat-notif-dot"></span>
         </div>
       </header>
 
@@ -442,7 +473,7 @@
             <div class="mitra-dashboard-stat-row">
               <div class="mitra-dashboard-stat-info">
                 <span class="mitra-dashboard-stat-label">Reservasi Hari Ini</span>
-                <span class="mitra-dashboard-stat-value" id="ph-stats-today">0</span>
+                <span class="mitra-dashboard-stat-value" id="ph-stats-today">-</span>
               </div>
               <div class="mitra-dashboard-stat-icon bg-blue">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -454,7 +485,7 @@
             <div class="mitra-dashboard-stat-row">
               <div class="mitra-dashboard-stat-info">
                 <span class="mitra-dashboard-stat-label">Menunggu Konfirmasi</span>
-                <span class="mitra-dashboard-stat-value" id="ph-stats-pending">0</span>
+                <span class="mitra-dashboard-stat-value" id="ph-stats-pending">-</span>
               </div>
               <div class="mitra-dashboard-stat-icon bg-orange">
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -466,7 +497,7 @@
             <div class="mitra-dashboard-stat-row">
               <div class="mitra-dashboard-stat-info">
                 <span class="mitra-dashboard-stat-label">Pengajuan Pembatalan</span>
-                <span class="mitra-dashboard-stat-value" id="ph-stats-cancel">0</span>
+                <span class="mitra-dashboard-stat-value" id="ph-stats-cancel">-</span>
               </div>
               <div class="mitra-dashboard-stat-icon bg-orange">
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -479,7 +510,7 @@
             <div class="mitra-dashboard-stat-row">
               <div class="mitra-dashboard-stat-info">
                 <span class="mitra-dashboard-stat-label">Total Pendapatan</span>
-                <span class="mitra-dashboard-stat-value" id="ph-stats-revenue">Rp 0</span>
+                <span class="mitra-dashboard-stat-value" id="ph-stats-revenue">Rp -</span>
               </div>
               <div class="mitra-dashboard-stat-icon bg-purple">
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
@@ -551,7 +582,7 @@
       </main>
     </div>
 
-   <script src="/public/js/mitra-dashboard.js" defer></script>
-
+    <script src="../js/mitra-dashboard.js" defer></script>
+    <script src="../js/notifications.js" defer></script>
   </body>
 </html>

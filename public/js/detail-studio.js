@@ -18,7 +18,7 @@ class Utils {
     }
 
     static getIconSvg(iconName) {
-        return ''; 
+        return '';
     }
 
     static showError(message) {
@@ -28,14 +28,14 @@ class Utils {
         const errorDiv = document.createElement('div');
         errorDiv.className = 'ds-error-message';
         errorDiv.textContent = message;
-        
+
         const mainContent = document.getElementById('mainContent');
-        if(mainContent) {
+        if (mainContent) {
             mainContent.insertBefore(errorDiv, mainContent.firstChild);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => errorDiv.remove(), 5000);
         } else {
-            alert(message); 
+            alert(message);
         }
     }
 
@@ -43,9 +43,9 @@ class Utils {
         const successDiv = document.createElement('div');
         successDiv.className = 'ds-success-message';
         successDiv.textContent = message;
-        
+
         const mainContent = document.getElementById('mainContent');
-        if(mainContent) {
+        if (mainContent) {
             mainContent.insertBefore(successDiv, mainContent.firstChild);
             setTimeout(() => successDiv.remove(), 5000);
         }
@@ -94,13 +94,13 @@ class Utils {
 //                     phone: '0812-3456-7890',
 //                     whatsapp: '6281234567890', 
 //                     coordinates: '-6.247637,106.990448',
-                    
+
 //                     hours: {
 //                         weekdays: '10:00 - 21:00',
 //                         weekends: '09:00 - 22:00',
 //                         isOpen: true
 //                     },
-                    
+
 //                     gallery: [
 //                         'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
 //                         'https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
@@ -109,14 +109,14 @@ class Utils {
 //                         'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
 //                         'https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'
 //                     ],
-                    
+
 //                     facilities: [
 //                         { id: 'fac-001', name: 'Wi-Fi Gratis', description: 'Internet cepat & stabil', icon: 'wifi' },
 //                         { id: 'fac-002', name: 'Backdrop Premium', description: '10+ pilihan backdrop', icon: 'image' },
 //                         { id: 'fac-003', name: 'Cetak Foto Langsung', description: 'Hasil cetak berkualitas', icon: 'printer' },
 //                         { id: 'fac-004', name: 'Lighting Professional', description: 'Ring light & softbox', icon: 'lightbulb' }
 //                     ],
-                    
+
 //                     allFacilities: [
 //                         { id: 'fac-001', name: 'Wi-Fi Gratis', description: 'Internet cepat & stabil', icon: 'wifi' },
 //                         { id: 'fac-002', name: 'Backdrop Premium', description: '10+ pilihan backdrop', icon: 'image' },
@@ -127,12 +127,12 @@ class Utils {
 //                         { id: 'fac-007', name: 'Loker Penyimpanan', description: 'Aman untuk barang pribadi', icon: 'default' },
 //                         { id: 'fac-008', name: 'Minuman Gratis', description: 'Air mineral & teh', icon: 'default' }
 //                     ],
-                    
+
 //                     themes: [
 //                         'Aesthetic Pink', 'Neon Vibes', 'Vintage', 'Minimalist',
 //                         'Birthday Party', 'K-Pop Style', 'Nature', 'Romantic'
 //                     ],
-                    
+
 //                     props: [
 //                         { name: 'Kacamata Lucu', icon: 'glasses' },
 //                         { name: 'Topi & Bando', icon: 'hat' },
@@ -144,7 +144,7 @@ class Utils {
 //                         { name: 'Pom-pom', icon: 'pompom' },
 //                         { name: 'Mustache', icon: 'mustache' }
 //                     ],
-                    
+
 //                     packages: [
 //                         {
 //                             id: 'pkg-001',
@@ -179,7 +179,7 @@ class Utils {
 //                             features: ['12 cetak foto 4R', 'Unlimited foto digital', 'Semua backdrop', 'Free properti foto', 'Free soft file & video', 'Album digital']
 //                         }
 //                     ],
-                    
+
 //                     reviews: {
 //                         summary: { 5: 2734, 4: 178, 3: 45, 2: 13, 1: 13 },
 //                         list: [
@@ -280,10 +280,10 @@ class GalleryManager {
     setupGalleryEvents() {
         const prevBtn = document.getElementById('prevPhoto');
         const nextBtn = document.getElementById('nextPhoto');
-        
+
         if (prevBtn) prevBtn.addEventListener('click', () => this.prevPhoto());
         if (nextBtn) nextBtn.addEventListener('click', () => this.nextPhoto());
-        
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') this.prevPhoto();
             if (e.key === 'ArrowRight') this.nextPhoto();
@@ -296,17 +296,17 @@ class GalleryManager {
         const gallery = this.app.currentStudio.gallery;
         const mainPhoto = document.getElementById('mainPhoto');
         const thumbnailGrid = document.getElementById('thumbnailGrid');
-        
+
         if (!gallery || gallery.length === 0) {
-            if(mainPhoto) mainPhoto.src = 'https://via.placeholder.com/800x600/333333/ffffff?text=No+Image';
-            if(thumbnailGrid) thumbnailGrid.innerHTML = '';
+            if (mainPhoto) mainPhoto.src = 'https://via.placeholder.com/800x600/333333/ffffff?text=No+Image';
+            if (thumbnailGrid) thumbnailGrid.innerHTML = '';
             return;
         }
-        
-        if(mainPhoto) mainPhoto.src = gallery[this.currentPhotoIndex];
+
+        if (mainPhoto) mainPhoto.src = gallery[this.currentPhotoIndex];
         this.updatePhotoCounter();
-        
-        if(thumbnailGrid) {
+
+        if (thumbnailGrid) {
             thumbnailGrid.innerHTML = '';
             gallery.forEach((photo, index) => {
                 const thumbnail = this.createThumbnail(photo, index);
@@ -319,15 +319,15 @@ class GalleryManager {
         const thumbnail = document.createElement('div');
         thumbnail.className = `ds-thumbnail ${index === this.currentPhotoIndex ? 'active' : ''}`;
         thumbnail.dataset.index = index;
-        
+
         const img = document.createElement('img');
         img.src = photo;
         img.alt = `Foto studio ${index + 1}`;
         img.loading = 'lazy';
-        
+
         thumbnail.appendChild(img);
         thumbnail.addEventListener('click', () => this.changePhoto(index));
-        
+
         return thumbnail;
     }
 
@@ -335,7 +335,7 @@ class GalleryManager {
         this.currentPhotoIndex = index;
         const mainPhoto = document.getElementById('mainPhoto');
         const gallery = this.app.currentStudio.gallery;
-        
+
         if (gallery && gallery[index] && mainPhoto) {
             mainPhoto.src = gallery[index];
             this.updatePhotoCounter();
@@ -358,7 +358,7 @@ class GalleryManager {
     updatePhotoCounter() {
         const counter = document.getElementById('photoCounter');
         const galleryLength = this.app.currentStudio.gallery.length;
-        if(counter) counter.textContent = `${this.currentPhotoIndex + 1} / ${galleryLength}`;
+        if (counter) counter.textContent = `${this.currentPhotoIndex + 1} / ${galleryLength}`;
     }
 
     updateActiveThumbnail() {
@@ -383,16 +383,16 @@ class TabManager {
 
     switchTab(tabName) {
         this.currentTab = tabName;
-        
+
         document.querySelectorAll('.ds-tab-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
         });
-        
+
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.toggle('active', content.id === `${tabName}Tab`);
             content.classList.toggle('hidden', content.id !== `${tabName}Tab`);
         });
-        
+
         if (tabName === 'packages') {
             this.app.renderPackages();
         }
@@ -401,52 +401,52 @@ class TabManager {
     renderFacilities() {
         const mainFacilitiesContainer = document.getElementById('mainFacilities');
         const allFacilitiesContainer = document.getElementById('allFacilities');
-        
-        if(mainFacilitiesContainer) mainFacilitiesContainer.innerHTML = '';
-        if(allFacilitiesContainer) allFacilitiesContainer.innerHTML = '';
-        
+
+        if (mainFacilitiesContainer) mainFacilitiesContainer.innerHTML = '';
+        if (allFacilitiesContainer) allFacilitiesContainer.innerHTML = '';
+
         this.app.currentStudio.facilities.slice(0, 4).forEach(facility => {
-            if(mainFacilitiesContainer) mainFacilitiesContainer.appendChild(this.createFacilityCard(facility));
+            if (mainFacilitiesContainer) mainFacilitiesContainer.appendChild(this.createFacilityCard(facility));
         });
-        
+
         this.app.currentStudio.allFacilities.forEach(facility => {
-            if(allFacilitiesContainer) allFacilitiesContainer.appendChild(this.createFacilityCard(facility));
+            if (allFacilitiesContainer) allFacilitiesContainer.appendChild(this.createFacilityCard(facility));
         });
     }
 
     createFacilityCard(facility) {
         const card = document.createElement('div');
         card.className = 'ds-facility-card';
-        
+
         const content = document.createElement('div');
         content.className = 'ds-facility-content';
-        
+
         const title = document.createElement('div');
         title.className = 'ds-card-title';
         title.textContent = facility.name;
-        
+
         const desc = document.createElement('div');
         desc.className = 'ds-small-text';
         desc.textContent = facility.description;
-        
+
         content.appendChild(title);
         content.appendChild(desc);
-        
+
         const iconDiv = document.createElement('div');
-        iconDiv.className = 'ds-facility-icon'; 
+        iconDiv.className = 'ds-facility-icon';
         card.appendChild(iconDiv);
 
         card.appendChild(content);
-        
+
         return card;
     }
 
     renderThemes() {
         const themesContainer = document.getElementById('themesContainer');
-        if(!themesContainer) return;
-        
+        if (!themesContainer) return;
+
         themesContainer.innerHTML = '';
-        
+
         this.app.currentStudio.themes.forEach(theme => {
             const chip = document.createElement('span');
             chip.style.cssText = `
@@ -465,22 +465,22 @@ class TabManager {
 
     renderProps() {
         const propsContainer = document.getElementById('propsContainer');
-        if(!propsContainer) return;
-        
+        if (!propsContainer) return;
+
         propsContainer.innerHTML = '';
-        
+
         this.app.currentStudio.props.forEach(prop => {
             const card = document.createElement('div');
             card.className = 'ds-facility-card';
             card.style.padding = '12px';
-            
+
             const iconDiv = document.createElement('div');
             iconDiv.className = 'ds-facility-icon';
-            
+
             const name = document.createElement('span');
             name.className = 'ds-small-text';
             name.textContent = prop.name;
-            
+
             card.appendChild(iconDiv);
             card.appendChild(name);
             propsContainer.appendChild(card);
@@ -496,72 +496,100 @@ class BookingManager {
         this.setupBookingEvents();
         this.initializeDatePicker();
     }
-
     setupBookingEvents() {
+        // --- Event Listener Tombol Reservasi ---
         const reserveBtn = document.getElementById('reserveBtn');
-        if(reserveBtn) reserveBtn.addEventListener('click', () => this.startReservation());
-        
-        const chatBtn = document.getElementById('chatBtn');
-        if(chatBtn) chatBtn.addEventListener('click', () => this.openChat());
-        
+        if (reserveBtn) reserveBtn.addEventListener('click', () => this.startReservation());
+
+        // --- [BARU] LOGIKA CHAT VIA APP (BAJAK TOMBOL WA) ---
+        // Ini yang bikin tombol "Chat WhatsApp" jadi lari ke "Chat App Internal"
+        const chatBtn = document.getElementById('chatWithPartnerBtn');
+        if (chatBtn) {
+            chatBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openInternalChat();
+            });
+        }
+
+        // --- Event Listener Lainnya (Biarkan Saja) ---
         const viewRouteBtn = document.getElementById('viewRouteBtn');
-        if(viewRouteBtn) viewRouteBtn.addEventListener('click', () => this.viewRoute());
-        
+        if (viewRouteBtn) viewRouteBtn.addEventListener('click', () => this.viewRoute());
+
         const mapPlaceholder = document.getElementById('mapPlaceholder');
-        if(mapPlaceholder) mapPlaceholder.addEventListener('click', () => this.openMaps());
-        
+        if (mapPlaceholder) mapPlaceholder.addEventListener('click', () => this.openMaps());
+
         const dateFilter = document.getElementById('dateFilter');
-        if(dateFilter) dateFilter.addEventListener('click', () => this.openDateModal());
-        
+        if (dateFilter) dateFilter.addEventListener('click', () => this.openDateModal());
+
         const peopleSelect = document.getElementById('peopleSelect');
-        if(peopleSelect) peopleSelect.addEventListener('change', (e) => this.handlePeopleChange(e.target.value));
-        
+        if (peopleSelect) peopleSelect.addEventListener('change', (e) => this.handlePeopleChange(e.target.value));
+
         const cancelDate = document.getElementById('cancelDate');
-        if(cancelDate) cancelDate.addEventListener('click', () => this.closeDateModal());
-        
+        if (cancelDate) cancelDate.addEventListener('click', () => this.closeDateModal());
+
         const confirmDate = document.getElementById('confirmDate');
-        if(confirmDate) confirmDate.addEventListener('click', () => this.confirmDate());
-        
+        if (confirmDate) confirmDate.addEventListener('click', () => this.confirmDate());
+
         const closeModal = document.querySelector('.ds-close-modal');
-        if(closeModal) closeModal.addEventListener('click', () => this.closeDateModal());
-        
+        if (closeModal) closeModal.addEventListener('click', () => this.closeDateModal());
+
         const modalDatePicker = document.getElementById('modalDatePicker');
-        if(modalDatePicker) modalDatePicker.addEventListener('change', (e) => {
+        if (modalDatePicker) modalDatePicker.addEventListener('change', (e) => {
             this.tempSelectedDate = e.target.value;
         });
     }
 
+    openInternalChat() {
+        if (!this.app.currentStudio) {
+            Utils.showError("Data studio belum siap.");
+            return;
+        }
+
+        // LOGIC PINTAR:
+        // Kalau ada 'mitra_id' (ID 8), pakai itu buat chat.
+        // Kalau apes gak ada, terpaksa pakai 'id' studio (ID 13).
+        const partnerId = this.app.currentStudio.mitra_id || this.app.currentStudio.id; 
+        
+        const partnerName = encodeURIComponent(this.app.currentStudio.name);
+        // Bawa foto pertama sebagai foto profil chat (kalau ada)
+        const partnerPhoto = encodeURIComponent(this.app.currentStudio.gallery?.[0] || ''); 
+        
+        console.log(`Membuka Chat Room dengan Mitra ID: ${partnerId}`);
+        
+        // Redirect ke chat.html membawa ID yang BENAR (ID 8)
+        window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_photo=${partnerPhoto}`;
+    }
     initializeDatePicker() {
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        
+
         const formattedToday = today.toISOString().split('T')[0];
-        
+
         const datePicker = document.getElementById('datePicker');
-        if(datePicker) datePicker.min = formattedToday;
-        
+        if (datePicker) datePicker.min = formattedToday;
+
         const modalPicker = document.getElementById('modalDatePicker');
-        if(modalPicker) modalPicker.min = formattedToday;
-        
+        if (modalPicker) modalPicker.min = formattedToday;
+
         this.selectedDate = formattedToday;
         this.updateDateDisplay();
     }
 
     openDateModal() {
         const modal = document.getElementById('dateModal');
-        if(modal) {
+        if (modal) {
             modal.classList.remove('hidden');
             if (this.selectedDate) {
                 const modalPicker = document.getElementById('modalDatePicker');
-                if(modalPicker) modalPicker.value = this.selectedDate;
+                if (modalPicker) modalPicker.value = this.selectedDate;
             }
         }
     }
 
     closeDateModal() {
         const modal = document.getElementById('dateModal');
-        if(modal) modal.classList.add('hidden');
+        if (modal) modal.classList.add('hidden');
         this.tempSelectedDate = null;
     }
 
@@ -578,20 +606,20 @@ class BookingManager {
         if (this.selectedDate) {
             const date = new Date(this.selectedDate);
             const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            if(dateDisplay) dateDisplay.textContent = date.toLocaleDateString('id-ID', options);
-            
+            if (dateDisplay) dateDisplay.textContent = date.toLocaleDateString('id-ID', options);
+
             const datePicker = document.getElementById('datePicker');
-            if(datePicker) datePicker.value = this.selectedDate;
+            if (datePicker) datePicker.value = this.selectedDate;
         }
     }
 
     handlePeopleChange(value) {
         this.selectedPeople = value;
         const display = document.getElementById('peopleDisplay');
-        if(display) display.textContent = Utils.getPeopleDisplay(value);
-        
+        if (display) display.textContent = Utils.getPeopleDisplay(value);
+
         const peopleFilter = document.getElementById('peopleFilter');
-        if(peopleFilter) peopleFilter.style.borderColor = '';
+        if (peopleFilter) peopleFilter.style.borderColor = '';
     }
 
     startReservation() {
@@ -600,28 +628,28 @@ class BookingManager {
             this.openDateModal();
             return;
         }
-        
+
         if (!this.selectedPeople) {
             Utils.showError('Pilih kapasitas sebelum melakukan reservasi');
-            
+
             const peopleFilter = document.getElementById('peopleFilter');
-            if(peopleFilter) {
+            if (peopleFilter) {
                 peopleFilter.style.borderColor = 'var(--ds-error)';
                 setTimeout(() => peopleFilter.style.borderColor = '', 2000);
             }
-            
+
             const peopleSelect = document.getElementById('peopleSelect');
-            if(peopleSelect) peopleSelect.focus();
+            if (peopleSelect) peopleSelect.focus();
             return;
         }
-        
+
         const params = new URLSearchParams({
             studioId: this.app.currentStudioId,
             date: this.selectedDate,
-            capacity: this.selectedPeople, 
+            capacity: this.selectedPeople,
             package: 'custom'
         });
-        
+
         window.location.href = `reservasi.html?${params.toString()}`;
     }
 
@@ -631,21 +659,21 @@ class BookingManager {
             this.openDateModal();
             return;
         }
-        
+
         if (!this.selectedPeople) {
             Utils.showError('Pilih kapasitas sebelum melakukan reservasi');
-            
+
             const peopleFilter = document.getElementById('peopleFilter');
-            if(peopleFilter) {
+            if (peopleFilter) {
                 peopleFilter.style.borderColor = 'var(--ds-error)';
                 setTimeout(() => peopleFilter.style.borderColor = '', 2000);
             }
 
             const peopleSelect = document.getElementById('peopleSelect');
-            if(peopleSelect) peopleSelect.focus();
+            if (peopleSelect) peopleSelect.focus();
             return;
         }
-        
+
         const params = new URLSearchParams({
             studioId: this.app.currentStudioId,
             date: this.selectedDate,
@@ -654,7 +682,7 @@ class BookingManager {
             packageName: packageData.name,
             price: packageData.price
         });
-        
+
         window.location.href = `reservasi.html?${params.toString()}`;
     }
 
@@ -686,7 +714,7 @@ class StudioApp {
         this.currentUser = this.getCurrentUser();
         this.currentStudio = null;
         this.searchQuery = '';
-        
+
         this.init();
     }
 
@@ -696,62 +724,89 @@ class StudioApp {
     }
 
     getCurrentUser() {
-  return {
-    id: 'user-001',
-    name: 'Guest User'
-  };
-}
+        return {
+            id: 'user-001',
+            name: 'Guest User'
+        };
+    }
 
 
     init() {
         this.galleryManager = new GalleryManager(this);
         this.tabManager = new TabManager(this);
         this.bookingManager = new BookingManager(this);
-        
+
         this.loadStudioData();
         this.setupEventListeners();
         this.updateNotificationCount();
     }
 
     async loadStudioData() {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/studios/${this.currentStudioId}`
-    );
-    const studio = await res.json();
+        try {
+            console.log("Fetching ALL data to find ID:", this.currentStudioId);
+            
+            const res = await fetch(`http://localhost:3000/studios`);
+            if (!res.ok) throw new Error(`HTTP Error! Status: ${res.status}`);
 
-    if (!studio) {
-      Utils.showError("Studio tidak ditemukan");
-      return;
+            const allStudios = await res.json();
+            const studio = allStudios.find(s => s.id == this.currentStudioId);
+
+            if (!studio) {
+                Utils.showError("Studio tidak ditemukan di database");
+                return;
+            }
+
+            // --- MAPPING DATA ANTI-CRASH ---
+            this.currentStudio = {
+                ...studio,
+                id: studio.id,
+                mitra_id: studio.mitra_id, 
+                
+                // Pengaman Angka (Rating, Harga, Review)
+                rating: studio.rating ? Number(studio.rating) : 5.0,
+                totalReviews: studio.totalReviews ? Number(studio.totalReviews) : 0,
+                price: studio.price ? Number(studio.price) : 0,
+                
+                // Pengaman Teks
+                phone: studio.phone || "-",
+                name: studio.name || "Nama Studio Tidak Tersedia",
+                description: studio.description || "Deskripsi belum diisi",
+                location: studio.location || "-",
+                city: studio.city || "-",
+
+                // Pengaman Array (GAMBAR, FASILITAS, PAKET)
+                gallery: studio.image ? [studio.image] : (studio.gallery || []),
+                facilities: studio.facilities || [],
+                allFacilities: studio.allFacilities || [],
+                packages: studio.packages || [],
+                reviews: studio.reviews || { summary: {}, list: [] },
+                
+                // 🔥 FIX UTAMA DI SINI (Themes & Props)
+                // Kalau di DB kosong, kita kasih array kosong biar gak error forEach
+                themes: studio.themes || [], 
+                props: studio.props || [],   
+
+                // Pengaman Jam Buka
+                hours: studio.hours || { weekdays: "09:00 - 21:00", weekends: "10:00 - 22:00", isOpen: true },
+            };
+
+            console.log("Studio Data Loaded (Super Safe Mode):", this.currentStudio);
+
+            this.renderStudioData();
+            this.galleryManager.renderGallery();
+            
+            // Sekarang fungsi-fungsi di bawah ini aman karena datanya sudah dijamin array []
+            this.tabManager.renderFacilities();
+            this.tabManager.renderThemes();
+            this.tabManager.renderProps();
+            this.renderPackages();
+            this.renderReviews();
+
+        } catch (err) {
+            console.error("Error loading studio details:", err);
+            Utils.showError("Gagal memuat data studio.");
+        }
     }
-
-    this.currentStudio = {
-      ...studio,
-      gallery: studio.gallery || [],
-      facilities: studio.facilities || [],
-      allFacilities: studio.allFacilities || [],
-      packages: studio.packages || [],
-      reviews: studio.reviews || null,
-      hours: studio.hours || {
-        weekdays: "-",
-        weekends: "-",
-        isOpen: true
-      }
-    };
-
-    this.renderStudioData();
-    this.galleryManager.renderGallery();
-    this.tabManager.renderFacilities();
-    this.tabManager.renderThemes();
-    this.tabManager.renderProps();
-    this.renderPackages();
-    this.renderReviews();
-
-  } catch (err) {
-    console.error(err);
-    Utils.showError("Gagal memuat data studio");
-  }
-}
 
     renderStudioData() {
         const setText = (id, text) => {
@@ -765,7 +820,7 @@ class StudioApp {
         setText('studioCity', this.currentStudio.city);
         setText('studioDescription', this.currentStudio.description);
         setText('studioCapacity', this.currentStudio.capacity);
-        
+
         setText('phoneNumber', this.currentStudio.phone);
 
         setText('sidebarRating', this.currentStudio.rating.toFixed(1));
@@ -775,7 +830,7 @@ class StudioApp {
         setText('weekdayHours', this.currentStudio.hours.weekdays);
         setText('weekendHours', this.currentStudio.hours.weekends);
         setText('sidebarHours', `Buka: ${this.currentStudio.hours.weekdays}`);
-        
+
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
         if (statusDot && statusText) {
@@ -791,24 +846,24 @@ class StudioApp {
 
     renderPackages() {
         const packagesContainer = document.getElementById('packagesContainer');
-        if(!packagesContainer) return;
-        
+        if (!packagesContainer) return;
+
         packagesContainer.innerHTML = '';
-        
+
         let packagesToShow = this.currentStudio.packages;
         if (this.searchQuery) {
             const query = this.searchQuery.toLowerCase();
-            packagesToShow = packagesToShow.filter(pkg => 
+            packagesToShow = packagesToShow.filter(pkg =>
                 pkg.name.toLowerCase().includes(query) ||
                 pkg.features.some(feat => feat.toLowerCase().includes(query))
             );
         }
-        
+
         packagesToShow.forEach(pkg => {
             const packageCard = this.createPackageCard(pkg);
             packagesContainer.appendChild(packageCard);
         });
-        
+
         if (packagesToShow.length === 0) {
             const message = document.createElement('div');
             message.className = 'ds-body-text';
@@ -823,24 +878,24 @@ class StudioApp {
         const packageCard = document.createElement('div');
         packageCard.className = `ds-package-card ${pkg.isPopular ? 'popular' : ''}`;
         packageCard.dataset.packageId = pkg.id;
-        
+
         const header = document.createElement('div');
         header.className = 'ds-package-header';
-        
+
         const infoDiv = document.createElement('div');
-        
+
         if (pkg.isPopular) {
             const titleRow = document.createElement('div');
             titleRow.style.cssText = 'display: flex; align-items: center; gap: 12px; margin-bottom: 8px;';
-            
+
             const name = document.createElement('div');
             name.className = 'ds-package-name';
             name.textContent = pkg.name;
-            
+
             const badge = document.createElement('span');
             badge.className = 'ds-popular-badge';
             badge.textContent = 'TERPOPULER';
-            
+
             titleRow.appendChild(name);
             titleRow.appendChild(badge);
             infoDiv.appendChild(titleRow);
@@ -850,48 +905,48 @@ class StudioApp {
             name.textContent = pkg.name;
             infoDiv.appendChild(name);
         }
-        
+
         const price = document.createElement('div');
         price.className = 'ds-package-price';
         price.textContent = `Rp ${pkg.price.toLocaleString('id-ID')}`;
-        
+
         const duration = document.createElement('div');
         duration.className = 'ds-package-duration';
         duration.textContent = `Durasi: ${pkg.duration}`;
-        
+
         infoDiv.appendChild(price);
         infoDiv.appendChild(duration);
-        
+
         header.appendChild(infoDiv);
-        
+
         const featuresList = document.createElement('div');
         featuresList.className = 'ds-features-list';
-        
+
         pkg.features.forEach(feature => {
             const featureItem = document.createElement('div');
             featureItem.className = 'ds-feature-item';
-            
+
             const checkIcon = document.createElement('svg');
             checkIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
             checkIcon.setAttribute('viewBox', '0 0 24 24');
             checkIcon.setAttribute('fill', 'none');
             checkIcon.setAttribute('stroke', 'currentColor');
             checkIcon.setAttribute('stroke-width', '3');
-            
+
             const featureText = document.createElement('span');
             featureText.className = 'ds-small-text';
             featureText.textContent = feature;
-            
+
             featureItem.appendChild(checkIcon);
             featureItem.appendChild(featureText);
             featuresList.appendChild(featureItem);
         });
-        
+
         packageCard.appendChild(header);
         packageCard.appendChild(featuresList);
-        
+
         packageCard.addEventListener('click', () => this.bookingManager.startBooking(pkg));
-        
+
         return packageCard;
     }
 
@@ -899,11 +954,11 @@ class StudioApp {
         if (!this.currentStudio.reviews) return;
 
         const overallRating = document.getElementById('overallRating');
-        if(overallRating) overallRating.textContent = this.currentStudio.rating.toFixed(1);
-        
+        if (overallRating) overallRating.textContent = this.currentStudio.rating.toFixed(1);
+
         const totalReviews = document.getElementById('totalReviews');
-        if(totalReviews) totalReviews.textContent = this.currentStudio.totalReviews.toLocaleString() + ' ulasan';
-        
+        if (totalReviews) totalReviews.textContent = this.currentStudio.totalReviews.toLocaleString() + ' ulasan';
+
         this.renderRatingStars();
         this.renderRatingBars();
         this.renderReviewList();
@@ -911,19 +966,19 @@ class StudioApp {
 
     renderRatingStars() {
         const starsContainer = document.getElementById('ratingStars');
-        if(!starsContainer) return;
+        if (!starsContainer) return;
         starsContainer.innerHTML = '';
-        
+
         const rating = this.currentStudio.rating;
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 >= 0.5;
-        
+
         for (let i = 0; i < 5; i++) {
             const star = document.createElement('svg');
             star.setAttribute('width', '20');
             star.setAttribute('height', '20');
             star.setAttribute('viewBox', '0 0 24 24');
-            
+
             if (i < fullStars) {
                 star.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
                 star.setAttribute('fill', 'black');
@@ -936,7 +991,7 @@ class StudioApp {
                 star.setAttribute('fill', 'none');
                 star.setAttribute('stroke', 'black');
             }
-            
+
             star.setAttribute('stroke-width', '2');
             starsContainer.appendChild(star);
         }
@@ -944,83 +999,83 @@ class StudioApp {
 
     renderRatingBars() {
         const barsContainer = document.getElementById('ratingBars');
-        if(!barsContainer) return;
+        if (!barsContainer) return;
         barsContainer.innerHTML = '';
-        
+
         const summary = this.currentStudio.reviews.summary;
         const total = Object.values(summary).reduce((a, b) => a + b, 0);
-        
+
         [5, 4, 3, 2, 1].forEach(rating => {
             const count = summary[rating] || 0;
             const percentage = total > 0 ? (count / total) * 100 : 0;
-            
+
             const barRow = document.createElement('div');
             barRow.className = 'ds-rating-bar';
-            
+
             const ratingLabel = document.createElement('span');
             ratingLabel.className = 'ds-small-text';
             ratingLabel.style.minWidth = '32px';
             ratingLabel.textContent = `${rating} ⭐`;
-            
+
             const barContainer = document.createElement('div');
             barContainer.className = 'ds-bar-container';
-            
+
             const barFill = document.createElement('div');
             barFill.className = 'ds-bar-fill';
             barFill.style.width = `${percentage}%`;
-            
+
             const countLabel = document.createElement('span');
             countLabel.className = 'ds-small-text';
             countLabel.style.minWidth = '40px';
             countLabel.style.textAlign = 'right';
             countLabel.textContent = count.toLocaleString();
-            
+
             barContainer.appendChild(barFill);
-            
+
             barRow.appendChild(ratingLabel);
             barRow.appendChild(barContainer);
             barRow.appendChild(countLabel);
-            
+
             barsContainer.appendChild(barRow);
         });
     }
 
     renderReviewList() {
         const reviewsContainer = document.getElementById('reviewsContainer');
-        if(!reviewsContainer) return;
+        if (!reviewsContainer) return;
         reviewsContainer.innerHTML = '';
-        
+
         this.currentStudio.reviews.list.forEach(review => {
             const reviewCard = document.createElement('div');
             reviewCard.className = 'ds-review-card';
-            
+
             const header = document.createElement('div');
             header.className = 'ds-review-header';
-            
+
             const avatar = document.createElement('div');
             avatar.className = 'ds-reviewer-avatar';
             avatar.textContent = review.initial;
-            
+
             const info = document.createElement('div');
             info.className = 'ds-reviewer-info';
-            
+
             const name = document.createElement('div');
             name.className = 'ds-card-title';
             name.textContent = review.reviewer;
-            
+
             const meta = document.createElement('div');
             meta.className = 'ds-review-meta';
-            
+
             const stars = document.createElement('div');
             stars.className = 'ds-rating-stars';
             stars.style.justifyContent = 'flex-start';
-            
+
             for (let i = 0; i < 5; i++) {
                 const star = document.createElement('svg');
                 star.setAttribute('width', '12');
                 star.setAttribute('height', '12');
                 star.setAttribute('viewBox', '0 0 24 24');
-                
+
                 if (i < review.rating) {
                     star.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
                     star.setAttribute('fill', 'black');
@@ -1033,24 +1088,24 @@ class StudioApp {
                 star.setAttribute('stroke-width', '2');
                 stars.appendChild(star);
             }
-            
+
             const date = document.createElement('span');
             date.className = 'ds-review-date';
             date.textContent = review.date;
-            
+
             meta.appendChild(stars);
             meta.appendChild(date);
-            
+
             const content = document.createElement('div');
             content.className = 'ds-review-content';
             content.textContent = review.content;
-            
+
             const helpful = document.createElement('div');
             helpful.className = 'ds-review-helpful';
-            
+
             const helpfulBtn = document.createElement('button');
             helpfulBtn.style.cssText = 'background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;';
-            
+
             const thumbIcon = document.createElement('svg');
             thumbIcon.setAttribute('width', '16');
             thumbIcon.setAttribute('height', '16');
@@ -1059,68 +1114,68 @@ class StudioApp {
             thumbIcon.setAttribute('stroke', 'currentColor');
             thumbIcon.setAttribute('stroke-width', '2');
             thumbIcon.innerHTML = '<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>';
-            
+
             const helpfulText = document.createElement('span');
             helpfulText.className = 'ds-small-text';
             helpfulText.textContent = `Membantu (${review.helpful})`;
-            
+
             helpfulBtn.appendChild(thumbIcon);
             helpfulBtn.appendChild(helpfulText);
             helpful.appendChild(helpfulBtn);
-            
+
             info.appendChild(name);
             info.appendChild(meta);
-            
+
             header.appendChild(avatar);
             header.appendChild(info);
-            
+
             reviewCard.appendChild(header);
             reviewCard.appendChild(content);
             reviewCard.appendChild(helpful);
-            
+
             reviewsContainer.appendChild(reviewCard);
         });
     }
 
     setupEventListeners() {
         const backBtn = document.getElementById('backBtn');
-        if(backBtn) backBtn.addEventListener('click', () => this.goBack());
-        
+        if (backBtn) backBtn.addEventListener('click', () => this.goBack());
+
         const notifBtn = document.getElementById('notificationBtn');
-        if(notifBtn) notifBtn.addEventListener('click', () => this.showNotifications());
-        
+        if (notifBtn) notifBtn.addEventListener('click', () => this.showNotifications());
+
         const profileBtn = document.getElementById('profileBtn');
-        if(profileBtn) profileBtn.addEventListener('click', () => this.goToProfile());
-        
+        if (profileBtn) profileBtn.addEventListener('click', () => this.goToProfile());
+
         const searchInput = document.getElementById('searchInput');
-        if(searchInput) searchInput.addEventListener('input', (e) => {
+        if (searchInput) searchInput.addEventListener('input', (e) => {
             this.searchQuery = e.target.value;
             this.renderPackages();
         });
-        
+
         const viewAllReviews = document.getElementById('viewAllReviews');
-        if(viewAllReviews) viewAllReviews.addEventListener('click', () => this.viewAllReviews());
+        if (viewAllReviews) viewAllReviews.addEventListener('click', () => this.viewAllReviews());
     }
 
     updateNotificationCount() {
- 
-}
 
-goBack() {
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = 'customer-app.html';
-  }
-}
+    }
 
-goToProfile() {
-  window.location.href = `kelolaprofile.html?id=${this.currentUser.id}`;
-}
+    goBack() {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = 'customer-app.html';
+        }
+    }
 
-viewAllReviews() {
-  alert(`Total ${this.currentStudio.totalReviews.toLocaleString()} ulasan tersedia. Fitur ini dalam pengembangan.`);
-}
+    goToProfile() {
+        window.location.href = `kelolaprofile.html?id=${this.currentUser.id}`;
+    }
+
+    viewAllReviews() {
+        alert(`Total ${this.currentStudio.totalReviews.toLocaleString()} ulasan tersedia. Fitur ini dalam pengembangan.`);
+    }
 
 }
 

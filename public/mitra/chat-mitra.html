@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Pelanggan - Mitra Area</title>
+    <script src="/socket.io/socket.io.js"></script> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* GAYA SAMA DENGAN CUSTOMER, TAPI SEDIKIT BEDA WARNA BIAR GAK BINGUNG */
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f8f9fa; margin: 0; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Header Mitra (Warna Gelap/Hitam sesuai brand) */
+        .app-header { background: #1a1a1a; color: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .back-link { text-decoration: none; color: #fff; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; opacity: 0.8; }
+        .back-link:hover { opacity: 1; }
+        .app-title { font-weight: 700; font-size: 18px; }
+
+        .chat-container { display: flex; flex: 1; overflow: hidden; max-width: 1400px; margin: 0 auto; width: 100%; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* SIDEBAR (KIRI) */
+        .sidebar { width: 350px; border-right: 1px solid #eee; display: flex; flex-direction: column; background: #fff; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #eee; font-weight: 700; font-size: 18px; color: #333; }
+        .chat-list { flex: 1; overflow-y: auto; }
+        
+        .chat-item { display: flex; align-items: center; padding: 15px 20px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #f9f9f9; }
+        .chat-item:hover { background-color: #f5f5f5; }
+        .chat-item.active { background-color: #f0f0f0; border-left: 4px solid #000; } /* Highlight Hitam */
+        
+        .avatar { width: 45px; height: 45px; background: #eee; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; font-size: 16px; flex-shrink: 0; }
+        .chat-info { flex: 1; overflow: hidden; }
+        .chat-name { font-weight: 600; margin-bottom: 4px; color: #333; }
+        .chat-preview { font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* AREA CHAT (KANAN) */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #fff; position: relative; }
+        
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #888; text-align: center; padding: 20px; }
+        
+        .chat-room { display: none; flex-direction: column; height: 100%; }
+        
+        .room-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; background: #fff; }
+        .room-name { font-weight: 700; font-size: 16px; margin-left: 15px; }
+        .room-role { font-size: 12px; color: #666; margin-left: 15px; background: #eee; padding: 2px 8px; border-radius: 10px;}
+
+        .messages-box { flex: 1; overflow-y: auto; padding: 20px; background: #f4f4f4; display: flex; flex-direction: column; gap: 10px; }
+        
+        /* BUBBLE CHAT (DIBALIK WARNANYA UNTUK MITRA) */
+        .bubble { max-width: 70%; padding: 10px 15px; border-radius: 12px; font-size: 14px; line-height: 1.5; position: relative; word-wrap: break-word; }
+        
+        /* Mitra (Saya) -> Kanan (Hitam) */
+        .sent { align-self: flex-end; background: #000; color: #fff; border-bottom-right-radius: 2px; }
+        
+        /* Customer (Mereka) -> Kiri (Putih) */
+        .received { align-self: flex-start; background: #fff; color: #000; border: 1px solid #ddd; border-bottom-left-radius: 2px; }
+        
+        .input-box { padding: 15px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        .input-box input { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
+        .send-btn { background: #000; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; width: 100%; }
+            .sidebar.show { display: flex; }
+            .chat-area.active { display: flex; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <a href="mitra-dashboard.html" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Dashboard Mitra
+        </a>
+        <div class="app-title">Kotak Masuk</div>
+        <div style="width: 100px;"></div>
+    </div>
+
+    <div class="chat-container">
+        
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">Pesan Masuk</div>
+            <div class="chat-list" id="chatList">
+                <div style="padding: 20px; text-align: center; color: #999; font-size: 13px;">Memuat pesan...</div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            
+            <div class="empty-state" id="emptyState">
+                <h3>Halo, Mitra! 👋</h3>
+                <p>Pilih pesan di sebelah kiri untuk membalas pelanggan.</p>
+            </div>
+
+            <div class="chat-room" id="chatRoom">
+                <div class="room-header">
+                    <div class="avatar" id="headerAvatar">C</div>
+                    <div>
+                        <div class="room-name" id="headerName">Nama Customer</div>
+                        <span class="room-role">Pelanggan</span>
+                    </div>
+                </div>
+
+                <div class="messages-box" id="messagesContainer">
+                    </div>
+
+                <div class="input-box">
+                    <input type="text" id="msgInput" placeholder="Balas pesan..." autocomplete="off">
+                    <button class="send-btn" onclick="sendMessage()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        // 1. CEK LOGIN (HARUS MITRA)
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser || currentUser.role !== 'mitra') {
+            alert("Akses ditolak. Halaman ini khusus Mitra.");
+            window.location.href = "login.html";
+        }
+
+        const myId = currentUser.id; // ID Mitra
+        let currentCustomerId = null; // ID Customer yg lagi dibuka
+        let ROOM_ID = null;
+
+        // ELEMENT DOM
+        const emptyState = document.getElementById('emptyState');
+        const chatRoom = document.getElementById('chatRoom');
+        const chatList = document.getElementById('chatList');
+        const headerName = document.getElementById('headerName');
+        const headerAvatar = document.getElementById('headerAvatar');
+        const msgInput = document.getElementById('msgInput');
+        const msgsContainer = document.getElementById('messagesContainer');
+
+        // URL Params (Kalau misal mau deep link dari notifikasi booking)
+        const params = new URLSearchParams(window.location.search);
+        const urlCustomerId = params.get("customer_id");
+        const urlCustomerName = params.get("customer_name");
+
+        function init() {
+            loadSidebarHistory();
+
+            if (urlCustomerId) {
+                // Kalau ada link dari dashboard (misal: tombol "Hubungi Customer" di detail booking)
+                openChat(urlCustomerId, urlCustomerName || "Pelanggan");
+            }
+        }
+
+        // --- BUKA CHAT ---
+        async function openChat(customerId, customerName) {
+            currentCustomerId = customerId;
+
+            // UI Update
+            emptyState.style.display = 'none';
+            chatRoom.style.display = 'flex';
+            headerName.innerText = decodeURIComponent(customerName);
+            headerAvatar.innerText = customerName.charAt(0).toUpperCase();
+
+            // === LOGIKA ROOM ID (KUNCI UTAMA) ===
+            // Rumus harus SAMA PERSIS dengan sisi Customer
+            // [myId (Mitra), customerId (User)].sort()
+            // Contoh: Mitra 99, User 5 -> Sort jadi [5, 99] -> room_5_99
+            // Hasilnya SAMA dengan di HP Customer
+            const ids = [myId, customerId].sort();
+            ROOM_ID = `room_${ids[0]}_${ids[1]}`;
+            
+            console.log("Mitra masuk ke room:", ROOM_ID);
+            socket.emit("join_room", ROOM_ID);
+
+            await loadMessages(customerId);
+        }
+
+        // --- LOAD LIST CUSTOMER (SIDEBAR) ---
+        async function loadSidebarHistory() {
+            try {
+                // Backend: Ambil list user yang pernah chat dengan Mitra ini
+                // Endpoint: /api/mitra/chat-history/:mitraId
+                // const res = await fetch(`http://localhost:3000/mitra/chat-history/${myId}`);
+                // const data = await res.json();
+
+                // DUMMY DATA (Hapus kalau backend ready)
+                const dummyData = [
+                    { id: 5, name: "Budi Santoso", lastMsg: "Apakah tanggal 15 kosong?" },
+                    { id: 8, name: "Siti Aminah", lastMsg: "Terima kasih kak!" }
+                ];
+
+                chatList.innerHTML = "";
+                dummyData.forEach(chat => {
+                    const div = document.createElement("div");
+                    div.className = `chat-item ${chat.id == currentCustomerId ? 'active' : ''}`;
+                    div.onclick = () => openChat(chat.id, chat.name);
+                    div.innerHTML = `
+                        <div class="avatar">${chat.name.charAt(0)}</div>
+                        <div class="chat-info">
+                            <div class="chat-name">${chat.name}</div>
+                            <div class="chat-preview">${chat.lastMsg}</div>
+                        </div>
+                    `;
+                    chatList.appendChild(div);
+                });
+
+            } catch (err) {
+                console.error("Gagal load sidebar:", err);
+            }
+        }
+
+        // --- LOAD ISI PESAN ---
+        async function loadMessages(customerId) {
+            msgsContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Memuat percakapan...</div>';
+            try {
+                // Backend: Ambil pesan antara Mitra (myId) dan Customer (customerId)
+                const res = await fetch(`http://localhost:3000/messages?user1=${myId}&user2=${customerId}`);
+                const msgs = await res.json();
+
+                msgsContainer.innerHTML = ""; // Clear
+                
+                msgs.forEach(msg => {
+                    // Kalau sender_id == Mitra ID -> Kanan (Sent)
+                    const type = (msg.sender_id == myId) ? 'sent' : 'received';
+                    addBubble(msg.message, type);
+                });
+
+            } catch (err) {
+                msgsContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Belum ada pesan.</div>';
+            }
+        }
+
+        // --- KIRIM PESAN ---
+        function sendMessage() {
+            const text = msgInput.value.trim();
+            if (!text || !currentCustomerId) return;
+
+            // Kirim ke Socket (Agar Customer terima realtime)
+            socket.emit("send_message", {
+                room: ROOM_ID,
+                sender_id: myId,        // Saya (Mitra)
+                receiver_id: currentCustomerId, // Dia (Customer)
+                message: text
+            });
+
+            // Simpan DB
+            saveMessageToDB(text);
+
+            msgInput.value = "";
+        }
+
+        async function saveMessageToDB(msg) {
+            try {
+                await fetch('http://localhost:3000/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sender_id: myId,
+                        receiver_id: currentCustomerId,
+                        message: msg
+                    })
+                });
+            } catch(e) { console.error("Gagal simpan DB", e); }
+        }
+
+        // --- TERIMA PESAN (REALTIME) ---
+        socket.on("receive_message", (data) => {
+            // Cek: Pesan ini buat room yang lagi dibuka gak?
+            // (Sebenarnya socket.io room sudah filter, tapi jaga-jaga)
+            const type = (data.sender_id == myId) ? 'sent' : 'received';
+            addBubble(data.message, type);
+        });
+
+        function addBubble(text, type) {
+            const div = document.createElement("div");
+            div.className = `bubble ${type}`;
+            div.innerText = text;
+            msgsContainer.appendChild(div);
+            msgsContainer.scrollTop = msgsContainer.scrollHeight;
+        }
+
+        msgInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        init();
+    </script>
+</body>
+</html>
