@@ -3,6 +3,23 @@ const radios = Array.from(document.querySelectorAll(".stars input"));
 const review = document.getElementById("review");
 const sendBtn = document.getElementById("sendBtn");
 
+// Parse URL Params
+const urlParams = new URLSearchParams(window.location.search);
+const bookingId = urlParams.get('bookingId');
+const studioId = urlParams.get('studioId');
+
+const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+if (!currentUser) {
+    alert("Silakan login terlebih dahulu");
+    window.location.href = "login.html";
+}
+
+if (!bookingId || !studioId) {
+    alert("Data booking tidak ditemukan");
+    window.location.href = "history.html";
+}
+
 function setRating(value) {
     const radio = document.querySelector(`.stars input[value="${value}"]`);
     if (radio) radio.checked = true;
@@ -35,21 +52,39 @@ radios.forEach(r => {
     r.addEventListener("change", () => setRating(Number(r.value)));
 });
 
-sendBtn.addEventListener("click", () => {
+sendBtn.addEventListener("click", async () => {
     const rating = getRating();
     const text = review.value.trim();
 
     if (rating === 0) return;
 
-    const reviewData = {
-        rating: rating,
-        ulasan: text,
-        tanggal: new Date().toLocaleDateString('id-ID')
-    };
-    localStorage.setItem('lastReview', JSON.stringify(reviewData));
+    try {
+        const response = await fetch("/reviews", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                booking_id: bookingId,
+                studio_id: studioId,
+                user_id: currentUser.id,
+                rating: rating,
+                comment: text
+            })
+        });
 
-    console.log("Mengirim ke server:", reviewData);
+        const result = await response.json();
 
-    window.location.href = "info-rating.html";
+        if (result.success) {
+            // alert("Terima kasih atas ulasan Anda!");
+            // window.location.href = `detail-studio.html?id=${studioId}`;
+            // Atau ke halaman sukses
+            window.location.href = "info-rating.html";
+        } else {
+            alert(result.message || "Gagal mengirim ulasan");
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat mengirim ulasan");
+    }
 });
 setRating(0);

@@ -113,6 +113,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(booking.id)}`;
         document.getElementById('qrImage').src = qrUrl;
 
+        // LOGIC TOMBOL ULASAN
+        const reviewBtn = document.getElementById('reviewBtn');
+        if (reviewBtn) {
+            const s = (booking.status || '').toLowerCase();
+            // Tampilkan tombol hanya jika status confirmed/paid/completed
+            if (['confirmed', 'paid', 'completed'].includes(s)) {
+                reviewBtn.style.display = 'block';
+                reviewBtn.onclick = () => {
+                    window.location.href = `review.html?bookingId=${bookingId}&studioId=${booking.studio_id}`;
+                };
+            } else {
+                reviewBtn.style.display = 'none';
+            }
+        }
+
         // SET LINK BATAL DINAMIS
         const cancelBtn = document.getElementById('cancelOrderBtn');
         if (cancelBtn) {

@@ -486,6 +486,8 @@ class StudioApp {
 
                 schedules: data.schedules,
 
+                reviews: data.reviews,
+
                 hours: {
                     weekdays: schedMap.senin
                         ? `${schedMap.senin.open_time.substring(0, 5)} - ${schedMap.senin.close_time.substring(0, 5)}`
@@ -505,6 +507,7 @@ class StudioApp {
             this.galleryManager.renderGallery();
             this.renderPackages();
             this.renderFacilities();
+            this.renderReviews();
 
         } catch (err) {
             console.error("❌ Detail Studio Error:", err);
@@ -671,15 +674,15 @@ class StudioApp {
 
             if (i < fullStars) {
                 star.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
-                star.setAttribute('fill', 'black');
-                star.setAttribute('stroke', 'black');
+                star.setAttribute('fill', '#F5B301');
+                star.setAttribute('stroke', '#F5B301');
             } else if (i === fullStars && hasHalfStar) {
-                star.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="url(#half-star)"/><defs><linearGradient id="half-star" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="black"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs>';
-                star.setAttribute('stroke', 'black');
+                star.innerHTML = '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="url(#half-star)"/><defs><linearGradient id="half-star" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#F5B301"/><stop offset="50%" stop-color="transparent"/></linearGradient></defs>';
+                star.setAttribute('stroke', '#F5B301');
             } else {
                 star.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
                 star.setAttribute('fill', 'none');
-                star.setAttribute('stroke', 'black');
+                star.setAttribute('stroke', '#F5B301');
             }
 
             star.setAttribute('stroke-width', '2');
@@ -784,79 +787,63 @@ class StudioApp {
             const info = document.createElement('div');
             info.className = 'ds-reviewer-info';
 
+            // 1. Nama
             const name = document.createElement('div');
             name.className = 'ds-card-title';
+            name.style.marginBottom = '4px';
             name.textContent = review.reviewer;
 
-            const meta = document.createElement('div');
-            meta.className = 'ds-review-meta';
-
+            // 2. Bintang (di bawah nama)
             const stars = document.createElement('div');
             stars.className = 'ds-rating-stars';
             stars.style.justifyContent = 'flex-start';
+            stars.style.margin = '0 0 8px 0'; // Margin bottom 8px
 
             for (let i = 0; i < 5; i++) {
-                const star = document.createElement('svg');
-                star.setAttribute('width', '12');
-                star.setAttribute('height', '12');
+                const star = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                star.setAttribute('width', '14');
+                star.setAttribute('height', '14');
                 star.setAttribute('viewBox', '0 0 24 24');
+                star.style.display = 'block'; // Ensure block display for SVG if needed
 
                 if (i < review.rating) {
                     star.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
-                    star.setAttribute('fill', 'black');
-                    star.setAttribute('stroke', 'black');
+                    // Use inline style to override CSS classes
+                    star.style.fill = '#F5B301';
+                    star.style.stroke = '#F5B301';
                 } else {
                     star.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
-                    star.setAttribute('fill', 'none');
-                    star.setAttribute('stroke', 'black');
+                    star.style.fill = 'none';
+                    star.style.stroke = '#ccc';
                 }
                 star.setAttribute('stroke-width', '2');
                 stars.appendChild(star);
             }
+            // Removed meta wrapper, appending stars directly later
 
-            const date = document.createElement('span');
-            date.className = 'ds-review-date';
-            date.textContent = review.date;
-
-            meta.appendChild(stars);
-            meta.appendChild(date);
-
+            // 3. Komentar
             const content = document.createElement('div');
             content.className = 'ds-review-content';
-            content.textContent = review.content;
+            content.style.marginBottom = '8px';
+            content.textContent = review.text;
 
-            const helpful = document.createElement('div');
-            helpful.className = 'ds-review-helpful';
-
-            const helpfulBtn = document.createElement('button');
-            helpfulBtn.style.cssText = 'background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;';
-
-            const thumbIcon = document.createElement('svg');
-            thumbIcon.setAttribute('width', '16');
-            thumbIcon.setAttribute('height', '16');
-            thumbIcon.setAttribute('viewBox', '0 0 24 24');
-            thumbIcon.setAttribute('fill', 'none');
-            thumbIcon.setAttribute('stroke', 'currentColor');
-            thumbIcon.setAttribute('stroke-width', '2');
-            thumbIcon.innerHTML = '<path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>';
-
-            const helpfulText = document.createElement('span');
-            helpfulText.className = 'ds-small-text';
-            helpfulText.textContent = `Membantu (${review.helpful})`;
-
-            helpfulBtn.appendChild(thumbIcon);
-            helpfulBtn.appendChild(helpfulText);
-            helpful.appendChild(helpfulBtn);
+            // 4. Tanggal (di bawah komentar)
+            const date = document.createElement('div');
+            date.className = 'ds-review-date';
+            date.style.fontSize = '12px';
+            date.style.color = '#6b7280';
+            date.textContent = review.date;
 
             info.appendChild(name);
-            info.appendChild(meta);
+            info.appendChild(stars); // Changed from meta to stars
+            info.appendChild(content);
+            info.appendChild(date);
 
             header.appendChild(avatar);
             header.appendChild(info);
 
             reviewCard.appendChild(header);
-            reviewCard.appendChild(content);
-            reviewCard.appendChild(helpful);
+            // reviewCard.appendChild(content); // Removed as it is now inside info
 
             reviewsContainer.appendChild(reviewCard);
         });
