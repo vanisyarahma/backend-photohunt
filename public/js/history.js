@@ -29,7 +29,15 @@ function getStatusConfig(item) {
     const s = (item.status || 'PENDING').toLowerCase();
     const cs = item.cancel_status ? item.cancel_status.toLowerCase() : null;
 
-    // 1. PRIORITAS: CEK STATUS PEMBATALAN (CANCEL TABLE)
+    // 1. PRIORITAS: STATUS DARI TABEL BOOKINGS (CONFIRMED/PAID/COMPLETED)
+    if (s === 'completed') {
+        return { label: "RESERVASI SELESAI", bgColor: "#10B981", textColor: "#FFFFFF" };
+    }
+    if (s === 'confirmed' || s === 'paid') {
+        return { label: "RESERVASI BERHASIL", bgColor: "#10B981", textColor: "#FFFFFF" };
+    }
+
+    // 2. CEK STATUS PEMBATALAN (CANCEL TABLE)
     if (cs === 'refunded') {
         return { label: "REFUND BERHASIL", bgColor: "#10B981", textColor: "#FFFFFF" };
     }
@@ -40,18 +48,12 @@ function getStatusConfig(item) {
         return { label: "REFUND DIPROSES", bgColor: "#F59E0B", textColor: "#FFFFFF" };
     }
 
-    // 2. STATUS DARI TABEL BOOKINGS
+    // 3. LAINNYA
     if (s === 'rejected') {
         return { label: "RESERVASI DITOLAK", bgColor: "#EF4444", textColor: "#FFFFFF" };
     }
-    if (s === 'completed') {
-        return { label: "RESERVASI SELESAI", bgColor: "#10B981", textColor: "#FFFFFF" };
-    }
-    if (s === 'confirmed' || s === 'paid') {
-        return { label: "RESERVASI DISETUJUI", bgColor: "#10B981", textColor: "#FFFFFF" };
-    }
 
-    // 3. STATUS MENUNGGU
+    // 4. STATUS MENUNGGU
     if (s === 'pending' || s === 'pending_payment') {
         return {
             label: s === 'pending' ? "MENUNGGU KONFIRMASI" : "MENUNGGU PEMBAYARAN",
@@ -135,3 +137,5 @@ function bukaDetailPesanan(id) {
 function bayar(id) {
     window.location.href = `pembayaran.html?bookingId=${id}`;
 }
+
+

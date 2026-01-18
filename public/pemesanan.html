@@ -600,7 +600,16 @@
             </div>
           </div>
 
-          <div class="qr-section">
+          <!-- 1. BUTTON BATAL (DI ATAS QR) -->
+          <div style="margin-top: 30px; margin-bottom: 20px;">
+            <button id="cancelOrderBtn" class="btn-outline" style="width: 100%; border-color: #ef4444; color: #ef4444;"
+              onclick="window.location.href='batal.html'">
+              Batalkan Pesanan
+            </button>
+          </div>
+
+          <!-- 2. QR SECTION -->
+          <div class="qr-section" style="margin-top: 0;">
             <div class="section-title" style="border: none; margin-bottom: 0; font-size: 20px">
               Tunjukkan QR Code
             </div>
@@ -614,17 +623,19 @@
               Scan untuk Verifikasi
             </div>
           </div>
+
+          <!-- 3. BUTTON ULASAN (DI BAWAH QR) -->
+          <div style="margin-top: 20px;">
+            <button id="reviewBtn" class="btn-black" style="width:100%; display:none;"
+              onclick="window.location.href='review.html'">
+              Berikan Ulasan
+            </button>
+          </div>
+
         </section>
       </div>
 
-      <div class="action-buttons">
-        <button id="cancelOrderBtn" class="btn-outline" onclick="window.location.href='batal.html'">
-          Batalkan Pesanan
-        </button>
-        <button id="reviewBtn" class="btn-black" onclick="window.location.href='review.html'">
-          Berikan Review
-        </button>
-      </div>
+      <!-- Action buttons container removed as buttons are now distributed -->
     </main>
   </div>
 

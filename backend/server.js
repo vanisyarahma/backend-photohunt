@@ -66,6 +66,22 @@ let db;
         refund_amount DECIMAL(10,2) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (booking_id) REFERENCES bookings(id)
+      );
+    `);
+
+  // Tabel Reviews
+  await db.execute(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        booking_id INT NOT NULL,
+        studio_id INT NOT NULL,
+        user_id INT NOT NULL,
+        rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (booking_id) REFERENCES bookings(id),
+        FOREIGN KEY (studio_id) REFERENCES studios(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
       )
     `);
 
@@ -129,12 +145,54 @@ app.get("/studios/:id/detail", async (req, res) => {
       [studioId]
     );
 
+    // 6) Reviews & Rating Info
+    const [reviewStats] = await db.query(
+      "SELECT COUNT(*) as totalReviews, AVG(rating) as avgRating FROM reviews WHERE studio_id = ?",
+      [studioId]
+    );
+    const totalReviews = reviewStats[0].totalReviews || 0;
+    const avgRating = reviewStats[0].avgRating ? Number(reviewStats[0].avgRating) : 0;
+
+    // 7) Recent Reviews List
+    const [reviewsList] = await db.query(
+      `SELECT r.rating, r.comment, r.created_at, u.name as reviewer 
+       FROM reviews r 
+       JOIN users u ON r.user_id = u.id 
+       WHERE r.studio_id = ? 
+       ORDER BY r.created_at DESC`,
+      [studioId]
+    );
+
+    // Format reviews for frontend
+    const formattedReviews = {
+      summary: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      list: reviewsList.map(r => ({
+        reviewer: r.reviewer,
+        rating: r.rating,
+        text: r.comment,
+        date: new Date(r.created_at).toLocaleDateString("id-ID"),
+        initial: r.reviewer.charAt(0).toUpperCase()
+      }))
+    };
+
+    // Calculate summary distribution
+    if (reviewsList.length > 0) {
+      const [distribution] = await db.query(
+        "SELECT rating, COUNT(*) as count FROM reviews WHERE studio_id = ? GROUP BY rating",
+        [studioId]
+      );
+      distribution.forEach(d => {
+        formattedReviews.summary[d.rating] = d.count;
+      });
+    }
+
     res.json({
-      studio,
+      studio: { ...studio, rating: avgRating, totalReviews: totalReviews }, // Inject rating updated
       images,
       facilities,
       packages,
-      schedules
+      schedules,
+      reviews: formattedReviews
     });
   } catch (err) {
     console.error(err);
@@ -729,6 +787,53 @@ app.patch("/cancellations/:id/status", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ message: "Gagal update status refund" });
+  }
+});
+
+// SUBMIT REVIEW
+app.post("/reviews", async (req, res) => {
+  try {
+    const { booking_id, studio_id, user_id, rating, comment } = req.body;
+
+    // Validasi basic
+    if (!booking_id || !studio_id || !user_id || !rating) {
+      return res.status(400).json({ message: "Data tidak lengkap" });
+    }
+
+    // Cek apakah user benar pemilik booking ini & status sudah selesai/confirmed
+    const [[booking]] = await db.query(
+      "SELECT id, status FROM bookings WHERE id = ? AND customer_id = ?",
+      [booking_id, user_id]
+    );
+
+    if (!booking) {
+      return res.status(403).json({ message: "Booking tidak valid atau bukan milik Anda" });
+    }
+
+    // (Opsional) Cek status booking, misal hanya boleh review kalau confirmed/completed
+    // if (!['confirmed', 'paid', 'completed'].includes(booking.status)) {
+    //   return res.status(400).json({ message: "Hanya pesanan selesai yang bisa diulas" });
+    // }
+
+    // Cek apakah sudah pernah review (1 booking = 1 review)
+    const [existing] = await db.query(
+      "SELECT id FROM reviews WHERE booking_id = ?",
+      [booking_id]
+    );
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "Anda sudah memberikan ulasan untuk pesanan ini" });
+    }
+
+    // Insert Review
+    await db.execute(
+      "INSERT INTO reviews (booking_id, studio_id, user_id, rating, comment) VALUES (?, ?, ?, ?, ?)",
+      [booking_id, studio_id, user_id, rating, comment || ""]
+    );
+
+    res.json({ success: true, message: "Ulasan berhasil dikirim" });
+  } catch (err) {
+    console.error("❌ REVIEW ERROR:", err);
+    res.status(500).json({ message: "Gagal mengirim ulasan" });
   }
 });
 
