@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadBookingDetail(bookingId);
     } else {
         alert("ID Pemesanan tidak ditemukan");
-        window.location.href = 'index.html';
+        window.location.href = 'customer-app.html';
     }
 });
 
@@ -56,7 +56,7 @@ async function loadBookingDetail(id) {
         if (remaining <= 0) {
             document.getElementById('timer-display').textContent = "WAKTU HABIS";
             alert("Waktu pembayaran telah habis.");
-            window.location.href = "index.html";
+            window.location.href = "customer-app.html";
         } else {
             startTimer(remaining);
             updateDeadlineInfo(createdAt);
@@ -122,7 +122,7 @@ function startTimer(duration) {
             clearInterval(interval);
             display.textContent = "WAKTU HABIS";
             alert("Mohon maaf session sudah habis. Silakan ulangi pemesanan dari awal.");
-            window.location.href = "index.html";
+            window.location.href = "customer-app.html";
         }
     }, 1000);
 }
@@ -175,4 +175,20 @@ async function confirmPayment() {
         console.error(err);
         alert("Terjadi kesalahan sistem saat mengirim pembayaran");
     }
+}
+
+function openChatFromPayment() {
+    if (!bookingData) {
+        alert("Tunggu sampai data pembayaran dimuat sepenuhnya.");
+        return;
+    }
+
+    const partnerId = bookingData.mitra_id;
+    const partnerName = encodeURIComponent(bookingData.studio_name);
+    
+    const partnerPhoto = bookingData.studio_image ? encodeURIComponent(bookingData.studio_image) : '';
+
+    console.log(`Membuka Chat Room Pembayaran dengan Mitra ID: ${partnerId}`);
+
+    window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_photo=${partnerPhoto}`;
 }

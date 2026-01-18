@@ -198,5 +198,5 @@ function viewProof(imageName) {
 
 function openChat(id) {
     // Redirect ke chat.html
-    window.location.href = `chat.html?bookingId=${id}`;
+    window.location.href = `chat-mitra.html?bookingId=${id}`;
 }

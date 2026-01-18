@@ -191,4 +191,26 @@ async function lanjutkanPembayaran() {
     }
 }
 
+function openChatFromReservation() {
+    if (!appState.currentStudio || !appState.currentStudio.studio) {
+        console.error("Data studio belum dimuat");
+        return;
+    }
+
+    const studioData = appState.currentStudio.studio;
+    const images = appState.currentStudio.images;
+
+    const partnerId = studioData.mitra_id || studioData.id;
+    const partnerName = encodeURIComponent(studioData.name);
+    
+    let partnerPhoto = '';
+    if (images && images.length > 0) {
+        partnerPhoto = encodeURIComponent('/images/studios/' + images[0].image);
+    }
+
+    console.log(`Membuka chat dengan ID: ${partnerId}`);
+
+    window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_photo=${partnerPhoto}`;
+}
+
 window.onload = loadStudioData;

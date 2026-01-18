@@ -7,8 +7,8 @@
 // if (user && user.role === 'mitra') {
 //   window.location.href = 'mitra-dashboard.html';
 // }
-const API_BASE_URL = "http://localhost:3000";
 
+const API_BASE_URL = "http://localhost:3000";
 
 const scope = {
   category: "photobox",
@@ -64,6 +64,10 @@ const scope = {
       const card = document.createElement("div");
       card.className = "studio-card";
 
+      // MENGGUNAKAN price_range karena kolom 'price' di DB bernilai NULL
+      // Jika price_range ada isinya, tampilkan. Jika tidak, tampilkan pesan default.
+      const displayPrice = studio.price_range ? studio.price_range : "Harga belum diatur";
+
       card.innerHTML = `
         <img 
           class="studio-img" 
@@ -71,9 +75,9 @@ const scope = {
             ? `${API_BASE_URL}/images/studios/${studio.image}` 
             : 'https://via.placeholder.com/400x225'}" 
         />
-        <div class="studio-name">${studio.name}</div>
-        <div>${studio.location}</div>
-        <div>Rp ${Number(studio.price).toLocaleString("id-ID")}</div>
+        <div class="studio-name" style="font-weight: bold; font-size: 1.1em; margin-top: 8px;">${studio.name}</div>
+        <div class="studio-location" style="color: #666; font-size: 0.9em;">${studio.location}</div>
+        <div class="studio-price" style="font-weight: 600; color: #000; margin-top: 4px;">${displayPrice}</div>
       `;
 
       card.onclick = () => {

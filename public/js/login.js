@@ -102,20 +102,27 @@ document.addEventListener("DOMContentLoaded", () => {
                     return; 
                 }
   
-                // Kalau lolos semua, Simpan & Redirect
+                // === BAGIAN PENTING: SIMPAN DATA KE BROWSER ===
+                // Simpan User Object lengkap (untuk Profile Page)
                 localStorage.setItem("currentUser", JSON.stringify(user));
+                // Simpan ID sebagai Token (cadangan untuk script lain)
+                localStorage.setItem("authToken", user.id); 
+  
                 alert(`Login Berhasil sebagai ${selectedRole}!`);
   
+                // Redirect Sesuai Role
                 if (selectedRole === "mitra") {
-                    // Cek Studio Logic
                     try {
                         const check = await fetch(`http://localhost:3000/mitra/${user.id}/has-studio`);
                         const { hasStudio } = await check.json();
+                        // Sesuaikan path ini dengan struktur folder kamu
                         window.location.href = hasStudio ? "mitra/mitra-dashboard.html" : "mitra/daftar-studio.html";
                     } catch (innerErr) {
+                        // Fallback jika fetch check studio gagal
                         window.location.href = "mitra/mitra-dashboard.html";
                     }
                 } else {
+                    // Redirect Customer
                     window.location.href = "customer-app.html";
                 }
   

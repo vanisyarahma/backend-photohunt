@@ -467,6 +467,28 @@
       margin-top: 12px;
       line-height: 1.4;
     }
+
+    /* Style Tombol Chat Sekunder */
+    .btn-chat-secondary {
+        background: #f3f4f6;
+        color: #000;
+        border: 1px solid #e5e7eb;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        transition: all 0.2s;
+        width: 100%;
+        justify-content: center;
+    }
+    .btn-chat-secondary:hover {
+        background: #e5e7eb;
+    }
   </style>
 </head>
 
@@ -482,7 +504,7 @@
           <circle cx="12" cy="13" r="4"></circle>
         </svg>
       </a>
-      <button class="cta-btn" onclick="window.location.href='chat.html'">Chat</button>
+      <button class="cta-btn" onclick="openChatFromPayment()">Chat</button>
     </div>
   </header>
 
@@ -620,6 +642,14 @@
 
       <div class="card">
         <h2 class="section-title">Ringkasan Pesanan</h2>
+        
+        <button id="btnChatToko" class="btn-chat-secondary" onclick="openChatFromPayment()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Chat
+        </button>
+
         <div class="summary-details">
           <div class="detail-group">
             <label>Studio:</label>
@@ -657,7 +687,6 @@
           <span class="total-val" id="total-price-display">Rp. -</span>
         </div>
 
-        <!-- WARNING POLICY -->
         <div
           style="background: #fff8f8; border: 1.2px solid #fee2e2; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: left;">
           <div style="display: flex; gap: 12px; align-items: flex-start;">

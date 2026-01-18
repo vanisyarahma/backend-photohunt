@@ -1,8 +1,8 @@
-// Ganti URL ini dengan alamat backend kamu nanti (misal: http://localhost:3000/api)
-const API_BASE_URL = 'https://api.photohunt.com/v1'; 
+const API_BASE_URL = 'http://localhost:3000'; 
 
 function getAuthToken() {
-    return localStorage.getItem('authToken'); 
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    return user ? user.id : null; 
 }
 
 function getHeaders() {
@@ -20,12 +20,13 @@ async function loadProfile() {
             headers: getHeaders()
         });
 
+        if (response.status === 401) {
+            alert("Sesi habis atau belum login. Silakan login kembali.");
+            window.location.href = 'login.html';
+            return;
+        }
+
         if (!response.ok) {
-            if (response.status === 401) {
-                alert("Sesi habis, silakan login kembali.");
-                window.location.href = 'login.html';
-                return;
-            }
             throw new Error('Gagal mengambil data profil');
         }
 
@@ -36,105 +37,180 @@ async function loadProfile() {
         populateForm(user);
 
     } catch (error) {
-        console.error("Error:", error);
-        alert("Gagal memuat profil. Periksa koneksi internet.");
+        console.error("Error Load Profile:", error);
+        if (!getAuthToken()) {
+            window.location.href = 'login.html';
+        }
     }
 }
 
 function populateForm(user) {
-    document.getElementById('display-name-header').innerText = user.name || 'User';
-    document.getElementById('display-email-header').innerText = user.email || '';
-    if(user.photoUrl) document.getElementById('avatar-img').src = user.photoUrl;
-
-    document.getElementById('input-name').value = user.name || ''; 
-    document.getElementById('input-username').value = user.username || '';
+    const displayName = document.getElementById('display-name-header');
+    const displayEmail = document.getElementById('display-email-header');
+    if (displayName) displayName.innerText = user.name || 'User';
+    if (displayEmail) displayEmail.innerText = user.email || '';
     
-    const emailInput = document.getElementById('input-email');
-    emailInput.value = user.email || ''; 
-    emailInput.readOnly = true; 
-    emailInput.classList.add('input-disabled');
+    const avatarImg = document.getElementById('avatar-img');
+    if(avatarImg) {
+        if(user.image) {
+            avatarImg.src = `${API_BASE_URL}/images/users/${user.image}?t=${new Date().getTime()}`;
+            avatarImg.style.display = 'block';
+        } else {
+            avatarImg.style.display = 'none'; 
+        }
+    }
 
-    document.getElementById('input-location').value = user.location || '';
-    document.getElementById('input-gender').value = user.gender || ''; 
-    document.getElementById('input-birthday').value = user.birthday ? user.birthday.split('T')[0] : ''; // Handle format tanggal ISO
+    const inputName = document.getElementById('input-name');
+    if (inputName) inputName.value = user.name || ''; 
+    
+    const inputEmail = document.getElementById('input-email');
+    if (inputEmail) {
+        inputEmail.value = user.email || ''; 
+        inputEmail.readOnly = true; 
+        inputEmail.classList.add('input-disabled');
+    }
+
+    const inputPhone = document.getElementById('input-phone');
+    if (inputPhone) inputPhone.value = user.phone || '';
+
+    const inputGender = document.getElementById('input-gender');
+    if (inputGender) inputGender.value = user.gender || ''; 
+
+    const inputLocation = document.getElementById('input-location');
+    if (inputLocation) inputLocation.value = user.location || '';
+    
+    const inputBirthday = document.getElementById('input-birthday');
+    if (inputBirthday && user.birthday) {
+        inputBirthday.value = user.birthday.split('T')[0];
+    }
 }
 
-document.getElementById('btn-save-profile').addEventListener('click', async () => {
-    const updatedData = {
-        name: document.getElementById('input-name').value.trim(),
-        username: document.getElementById('input-username').value.trim(),
-        location: document.getElementById('input-location').value.trim(),
-        gender: document.getElementById('input-gender').value,
-        birthday: document.getElementById('input-birthday').value
-    };
+const btnSaveProfile = document.getElementById('btn-save-profile');
+if (btnSaveProfile) {
+    btnSaveProfile.addEventListener('click', async () => {
+        const updatedData = {
+            name: document.getElementById('input-name')?.value.trim(),
+            phone: document.getElementById('input-phone')?.value.trim(),
+            location: document.getElementById('input-location')?.value.trim(),
+            gender: document.getElementById('input-gender')?.value,
+            birthday: document.getElementById('input-birthday')?.value
+        };
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/profile`, {
-            method: 'PUT',
-            headers: getHeaders(),
-            body: JSON.stringify(updatedData)
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}/profile`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify(updatedData)
+            });
 
-        const result = await response.json();
+            const result = await response.json();
 
-        if (!response.ok) {
-            throw new Error(result.message || 'Gagal update profil');
+            if (!response.ok) throw new Error(result.message || 'Gagal update profil');
+
+            document.getElementById('display-name-header').innerText = updatedData.name;
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+            const newSessionData = { ...currentUser, ...updatedData };
+            localStorage.setItem('currentUser', JSON.stringify(newSessionData));
+
+            alert('Berhasil: Profil telah diperbarui!');
+        } catch (error) {
+            console.error(error);
+            alert(`Gagal: ${error.message}`);
+        }
+    });
+}
+
+const btnSavePassword = document.getElementById('btn-save-password');
+if (btnSavePassword) {
+    btnSavePassword.addEventListener('click', async () => {
+        const currentPass = document.getElementById('input-curr-pass').value;
+        const newPass = document.getElementById('input-new-pass').value;
+        const confirmPass = document.getElementById('input-conf-pass').value;
+
+        if (!currentPass || !newPass || !confirmPass) return alert('Isi semua field password.');
+        if (newPass.length < 6) return alert('Password minimal 6 karakter.');
+        if (newPass !== confirmPass) return alert('Konfirmasi password tidak cocok.');
+
+        const payload = {
+            currentPassword: currentPass,
+            newPassword: newPass
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/change-password`, {
+                method: 'POST', 
+                headers: getHeaders(),
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Gagal mengganti password');
+            }
+
+            alert('Password berhasil diubah. Silakan login ulang.');
+            
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html'; 
+
+        } catch (error) {
+            console.error("Password Error:", error);
+            alert(`Gagal: ${error.message}`);
+        }
+    });
+}
+
+const fileInput = document.getElementById('file-input-profile');
+if (fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert("Ukuran file terlalu besar (Max 2MB)");
+            return;
         }
 
-        document.getElementById('display-name-header').innerText = updatedData.name;
-        
-        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
-        localStorage.setItem('currentUser', JSON.stringify({ ...currentUser, ...updatedData }));
+        const formData = new FormData();
+        formData.append('photo', file);
 
-        alert('Berhasil: Profil telah diperbarui di server!');
+        try {
+            const token = getAuthToken();
+            const response = await fetch(`${API_BASE_URL}/profile/upload-photo`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: formData
+            });
 
-    } catch (error) {
-        console.error("Update Error:", error);
-        alert(`Gagal: ${error.message}`);
-    }
-});
+            const result = await response.json();
 
-document.getElementById('btn-save-password').addEventListener('click', async () => {
-    const currentPass = document.getElementById('input-curr-pass').value;
-    const newPass = document.getElementById('input-new-pass').value;
-    const confirmPass = document.getElementById('input-conf-pass').value;
+            if (!response.ok) throw new Error(result.message || "Gagal upload");
 
-    if (!currentPass || !newPass || !confirmPass) return alert('Isi semua field password.');
-    if (newPass.length < 6) return alert('Password minimal 6 karakter.');
-    if (newPass !== confirmPass) return alert('Konfirmasi password tidak cocok.');
+            const avatarImg = document.getElementById('avatar-img');
+            avatarImg.src = `${API_BASE_URL}/images/users/${result.image}?t=${new Date().getTime()}`;
+            avatarImg.style.display = 'block';
 
-    const payload = {
-        currentPassword: currentPass,
-        newPassword: newPass
-    };
+            const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+            currentUser.image = result.image;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/change-password`, {
-            method: 'POST', 
-            headers: getHeaders(),
-            body: JSON.stringify(payload)
-        });
+            alert("Foto profil berhasil diperbarui!");
 
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.message || 'Gagal mengganti password');
+        } catch (error) {
+            console.error(error);
+            alert(`Gagal Upload: ${error.message}`);
+        } finally {
+            fileInput.value = '';
         }
-
-        alert('Password berhasil diubah. Silakan login ulang.');
-        
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('currentUser');
-        window.location.href = 'login.html'; 
-
-    } catch (error) {
-        console.error("Password Error:", error);
-        alert(`Gagal: ${error.message}`);
-    }
-});
+    });
+}
 
 function redirectToSettings() {
-    window.location.href = 'halaman_pengaturan.html'; 
+    window.location.href = 'pengaturan.html'; 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
