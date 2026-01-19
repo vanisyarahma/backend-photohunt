@@ -15,8 +15,8 @@
             --ds-header-height: 100px;
             --ds-black: #000000;
             --ds-white: #ffffff;
-            --ds-bg-dark: #101828;
-            --ds-border: #364153;
+            --ds-bg-dark: #101828; /* Warna Header Baru */
+            --ds-border: #364153;  /* Border untuk Header Gelap */
             --ds-text-dark: #101828;
             --ds-text-med: #4a5565;
             --ds-text-light: #6a7282;
@@ -50,8 +50,9 @@
             box-sizing: border-box;
         }
 
+        /* --- HEADER DARK MODE STYLE (UPDATED) --- */
         .ds-header {
-            background: #ffffff;
+            background: var(--ds-bg-dark); /* FIX: Header Gelap */
             height: var(--ds-header-height);
             width: 100%;
             position: fixed;
@@ -63,14 +64,15 @@
             align-items: center;
             justify-content: space-between;
             gap: 20px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--ds-border);
+            color: var(--ds-white);
         }
 
         .ds-nav-btn {
             width: 50px;
             height: 50px;
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
+            background: rgba(255, 255, 255, 0.1); /* Transparan */
+            border: 1px solid var(--ds-border);
             border-radius: var(--ds-radius-md);
             display: flex;
             align-items: center;
@@ -81,23 +83,23 @@
         }
 
         .ds-nav-btn:hover {
-            border-color: #000;
-            background: #f9f9f9;
+            border-color: var(--ds-white);
+            background: rgba(255, 255, 255, 0.2);
             transform: scale(1.05);
         }
 
         .ds-nav-btn svg {
             width: 24px;
             height: 24px;
-            stroke: #000;
+            stroke: var(--ds-white); /* Icon Putih */
         }
 
         .ds-header-search {
             flex: 1;
             max-width: 100%;
             height: 50px;
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--ds-border);
             border-radius: var(--ds-radius-md);
             padding: 0 20px;
             display: flex;
@@ -107,19 +109,19 @@
         }
 
         .ds-header-search:hover {
-            border-color: #000;
+            border-color: var(--ds-white);
         }
 
         .ds-header-search svg {
             width: 20px;
             height: 20px;
-            stroke: #999;
+            stroke: var(--ds-text-light);
         }
 
         .ds-search-input {
             background: transparent;
             border: none;
-            color: #000;
+            color: var(--ds-white); /* Teks Ketikan Putih */
             font-family: 'Inter', sans-serif;
             font-size: 16px;
             width: 100%;
@@ -127,16 +129,20 @@
             height: 100%;
         }
 
+        .ds-search-input::placeholder {
+            color: var(--ds-text-light);
+        }
+
         .ds-header-filter {
             height: 50px;
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--ds-border);
             border-radius: var(--ds-radius-md);
             padding: 0 20px;
             display: flex;
             align-items: center;
             gap: 14px;
-            color: #000;
+            color: var(--ds-white); /* Teks Filter Putih */
             font-family: 'Inter', sans-serif;
             font-size: 15px;
             font-weight: 500;
@@ -147,14 +153,22 @@
         }
 
         .ds-header-filter:hover {
-            border-color: #000;
+            border-color: var(--ds-white);
         }
 
         .ds-header-filter svg {
             width: 20px;
             height: 20px;
-            stroke: #000;
+            stroke: var(--ds-white); /* Icon Filter Putih */
         }
+
+        /* Profile Button Special Fix */
+        #profileBtn svg {
+            stroke: var(--ds-white);
+            fill: none;
+        }
+        /* --- END HEADER STYLE --- */
+
 
         .ds-filter-overlay {
             position: absolute;
@@ -848,128 +862,417 @@
             color: #16A34A;
             margin-bottom: 16px;
         }
+        /* ==================== */
+/* IPHONE 14 PLUS RESPONSIVE - 428x926 viewport */
+/* ==================== */
 
-        /* RESPONSIVE */
-        @media (max-width: 1200px) {
-            .ds-gallery {
-                flex-direction: column;
-                height: auto;
-            }
+/* MOBILE: iPhone 14 Plus dan sejenis (max-width: 428px) */
+@media (max-width: 428px) {
+    /* Body dan Header */
+    body {
+        padding-top: 120px;
+    }
+    
+    .ds-header {
+        height: auto;
+        min-height: 70px;
+        padding: 10px 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    /* Header layout untuk mobile */
+    .ds-nav-btn {
+        width: 44px;
+        height: 44px;
+        order: 1;
+    }
+    
+    #profileBtn {
+        order: 2;
+    }
+    
+    .ds-header-search {
+        order: 3;
+        width: 100%;
+        margin-top: 5px;
+        height: 44px;
+    }
+    
+    #dateFilter {
+        order: 4;
+        flex: 1;
+        height: 44px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+    
+    #peopleFilter {
+        order: 5;
+        flex: 1;
+        height: 44px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+    
+    /* Container */
+    .ds-container {
+        padding: 15px;
+    }
+    
+    /* Gallery - iPhone 14 Plus */
+    .ds-gallery {
+        flex-direction: column;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    
+    .ds-main-photo {
+        height: 320px; /* Tinggi optimal untuk iPhone */
+        margin-bottom: 10px;
+    }
+    
+    .ds-thumbnail-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 110px);
+        gap: 8px;
+    }
+    
+    /* Photo counter dan arrows */
+    .ds-photo-counter {
+        font-size: 13px;
+        bottom: 15px;
+        left: 15px;
+        padding: 3px 10px;
+    }
+    
+    .ds-nav-arrow {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .ds-nav-arrow svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Tabs - horizontal scroll untuk mobile */
+    .ds-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .ds-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .ds-tab-btn {
+        padding: 14px 18px;
+        font-size: 14px;
+        display: inline-block;
+    }
+    
+    /* Content wrapper */
+    .ds-content-wrapper {
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    .ds-main-info {
+        border-right: none;
+        padding-right: 0;
+    }
+    
+    .ds-booking-sidebar {
+        max-width: 100%;
+        min-width: unset;
+        background: var(--ds-white);
+        border: 1px solid var(--ds-border-light);
+        border-radius: var(--ds-radius-lg);
+        padding: 20px;
+        box-shadow: var(--ds-shadow);
+    }
+    
+    /* Typography untuk mobile */
+    .ds-title {
+        font-size: 24px;
+        line-height: 1.3;
+    }
+    
+    .ds-section-title {
+        font-size: 20px;
+        margin-bottom: 18px;
+    }
+    
+    .ds-subsection-title {
+        font-size: 17px;
+        margin-bottom: 15px;
+    }
+    
+    .ds-body-text {
+        font-size: 15px;
+    }
+    
+    .ds-small-text {
+        font-size: 13px;
+    }
+    
+    /* Facilities grid */
+    .ds-facilities-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .facilities-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .facility-item {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    /* Packages */
+    .ds-packages-grid {
+        gap: 16px;
+    }
+    
+    .ds-package-card {
+        padding: 20px;
+    }
+    
+    .ds-package-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+    
+    .ds-package-name {
+        font-size: 20px;
+    }
+    
+    .ds-package-price {
+        font-size: 28px;
+    }
+    
+    .ds-package-duration {
+        font-size: 13px;
+    }
+    
+    .ds-features-list {
+        gap: 8px;
+    }
+    
+    .ds-feature-item {
+        font-size: 14px;
+    }
+    
+    /* Rating */
+    .ds-rating-summary {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .ds-overall-rating {
+        min-width: unset;
+    }
+    
+    .ds-rating-number {
+        font-size: 46px;
+    }
+    
+    .ds-rating-stars svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    /* Reviews */
+    .ds-review-card {
+        padding: 20px;
+    }
+    
+    .ds-review-header {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .ds-reviewer-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 17px;
+    }
+    
+    .ds-review-content {
+        font-size: 15px;
+    }
+    
+    /* Buttons */
+    .ds-btn-primary {
+        padding: 15px;
+        font-size: 17px;
+        margin-bottom: 20px;
+    }
+    
+    .ds-btn-secondary {
+        padding: 12px;
+        font-size: 15px;
+    }
+    
+    /* Hours card */
+    .ds-hours-card {
+        padding: 18px;
+    }
+    
+    .ds-hour-row {
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 10px;
+    }
+    
+    .ds-status-indicator {
+        margin-top: 10px;
+        padding-top: 10px;
+    }
+    
+    /* Map placeholder */
+    .ds-map-placeholder {
+        height: 140px;
+    }
+}
 
-            .ds-main-photo {
-                height: 400px;
-            }
+/* iPhone 14 Plus dalam mode landscape */
+@media (max-width: 926px) and (min-height: 428px) and (orientation: landscape) {
+    .ds-header {
+        height: 60px;
+        padding: 5px 15px;
+    }
+    
+    body {
+        padding-top: 70px;
+    }
+    
+    .ds-main-photo {
+        height: 250px;
+    }
+    
+    .ds-thumbnail-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: 120px;
+        height: 130px;
+    }
+    
+    .ds-gallery {
+        flex-direction: row;
+        height: 250px;
+    }
+    
+    .ds-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
 
-            .ds-thumbnail-grid {
-                grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: 200px 200px;
-            }
+/* Untuk iPhone yang lebih kecil (max-width: 375px) */
+@media (max-width: 375px) {
+    .ds-header-filter span {
+        font-size: 12px;
+    }
+    
+    .ds-header-filter {
+        padding: 0 8px;
+    }
+    
+    .ds-main-photo {
+        height: 280px;
+    }
+    
+    .ds-thumbnail-grid {
+        grid-template-rows: repeat(3, 100px);
+    }
+    
+    .ds-title {
+        font-size: 22px;
+    }
+    
+    .ds-section-title {
+        font-size: 19px;
+    }
+    
+    .ds-package-card {
+        padding: 18px;
+    }
+}
 
-            .ds-content-wrapper {
-                flex-direction: column;
-                gap: 24px;
-            }
+/* Untuk iPhone yang sangat kecil (max-width: 320px) */
+@media (max-width: 320px) {
+    .ds-header-filter span {
+        display: none;
+    }
+    
+    .ds-header-filter {
+        width: 44px;
+        justify-content: center;
+        padding: 0;
+    }
+    
+    .ds-thumbnail-grid {
+        grid-template-rows: repeat(3, 90px);
+    }
+    
+    .ds-package-header {
+        gap: 6px;
+    }
+    
+    .ds-package-name {
+        font-size: 18px;
+    }
+    
+    .ds-package-price {
+        font-size: 26px;
+    }
+}
 
-            .ds-main-info {
-                border-right: none;
-                padding-right: 0;
-            }
-
-            .ds-booking-sidebar {
-                max-width: 100%;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .ds-header {
-                height: auto;
-                min-height: 80px;
-                padding: 16px;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-
-            .ds-nav-btn {
-                width: 44px;
-                height: 44px;
-            }
-
-            .ds-header-search,
-            .ds-header-filter {
-                height: 44px;
-                width: 100%;
-                max-width: 100%;
-            }
-
-            body {
-                padding-top: 140px;
-            }
-
-            .ds-container {
-                padding: 16px;
-            }
-
-            .ds-thumbnail-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .ds-facilities-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .ds-tabs {
-                overflow-x: auto;
-            }
-
-            .ds-tab-btn {
-                white-space: nowrap;
-            }
-
-            .ds-rating-summary {
-                flex-direction: column;
-                gap: 20px;
-            }
-        }
-
-        .facilities-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-        }
-
-        .facility-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border: 1.2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 14px;
-            background: #fff;
-        }
-
-        .facility-icon {
-            color: #10b981;
-            font-weight: bold;
-        }
-
-
-        @media (max-width: 480px) {
-            .ds-package-header {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .ds-thumbnail-grid {
-                grid-template-columns: 1fr;
-                grid-template-rows: repeat(6, 150px);
-            }
-
-            .ds-nav-arrow {
-                width: 32px;
-                height: 32px;
-            }
-        }
+/* Touch optimization untuk semua mobile */
+@media (hover: none) and (pointer: coarse) {
+    .ds-nav-btn,
+    .ds-tab-btn,
+    .ds-btn-primary,
+    .ds-btn-secondary {
+        min-height: 44px;
+    }
+    
+    .ds-nav-arrow {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .ds-thumbnail {
+        cursor: pointer;
+    }
+    
+    /* Hilangkan hover effect di mobile */
+    .ds-package-card:hover,
+    .ds-facility-card:hover,
+    .ds-thumbnail:hover {
+        transform: none;
+        border-color: var(--ds-border-light);
+    }
+    
+    /* Tambahkan active state untuk touch */
+    .ds-package-card:active,
+    .ds-btn-primary:active,
+    .ds-btn-secondary:active {
+        opacity: 0.9;
+        transform: scale(0.98);
+    }
+}
     </style>
 </head>
 

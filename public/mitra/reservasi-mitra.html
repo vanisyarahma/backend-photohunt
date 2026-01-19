@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <title>Reservasi Masuk</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/photohunt-backend/public/style.css" />
 
   <style>
     * {
@@ -28,7 +27,7 @@
       align-items: center;
       gap: 20px;
       border-bottom: 1px solid #eaeaea;
-      margin-bottom: 30px;
+      margin-bottom: 0px;
     }
 
     .mitra-back-btn {
@@ -263,6 +262,118 @@
     .mitra-actions {
       display: flex;
       gap: 8px;
+    }
+    /* ========== MEDIA QUERY KHUSUS IPHONE 14 PLUS & SMALLER PHONES ========== */
+    @media (max-width: 428px) {
+      .mitra-header {
+        padding: 12px 14px;
+        gap: 10px;
+      }
+      
+      .mitra-back-icon {
+        width: 18px;
+        height: 18px;
+      }
+      
+      .mitra-header-title {
+        font-size: 0.9rem;
+      }
+      
+      .mitra-reservasi-page {
+        padding: 12px;
+      }
+      
+      .mitra-tabs {
+        margin-bottom: 12px;
+      }
+      
+      .mitra-tab {
+        padding: 3px 7px;
+        font-size: 9px;
+      }
+      
+      .mitra-card {
+        padding: 10px;
+        margin-bottom: 8px;
+      }
+      
+      .mitra-studio-name {
+        font-size: 11px;
+      }
+      
+      .mitra-btn-detail,
+      .btn-outline,
+      .btn-outline-danger,
+      .btn-success,
+      .btn-primary {
+        padding: 3px 8px;
+        font-size: 10px;
+      }
+      
+      .mitra-badge {
+        font-size: 9px;
+        padding: 1px 5px;
+      }
+      
+      .mitra-order-id {
+        font-size: 9px;
+        margin: 2px 0 6px;
+      }
+      
+      .mitra-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      
+      .mitra-info-item .label {
+        font-size: 8px;
+      }
+      
+      .mitra-info-item .value {
+        font-size: 10px;
+      }
+      
+      .mitra-card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      
+      .mitra-actions {
+        justify-content: flex-end;
+      }
+      
+      .loading-state {
+        font-size: 12px;
+        padding: 16px;
+      }
+    }
+
+    /* ========== MEDIA QUERY UNTUK VERY SMALL PHONES ========== */
+    @media (max-width: 375px) {
+      .mitra-tabs {
+        gap: 3px;
+      }
+      
+      .mitra-tab {
+        padding: 2px 6px;
+        font-size: 8px;
+      }
+      
+      .mitra-card {
+        padding: 8px;
+      }
+      
+      .mitra-info-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      
+      .mitra-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
     }
   </style>
 </head>

@@ -9,10 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const roleMitraBtn = document.getElementById("phluRoleMitra");
   
     // 2. LOGIKA PILIH ROLE (WAJIB DIPILIH)
-    // Default = null (Belum ada yang dipilih)
     let selectedRole = null; 
   
-    // Fungsi untuk reset warna tombol
     function resetButtons() {
         if(roleUserBtn) roleUserBtn.classList.remove("role-active");
         if(roleMitraBtn) roleMitraBtn.classList.remove("role-active");
@@ -46,10 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // CEK 1: Apakah user sudah pilih role?
             if (!selectedRole) {
                 alert("Wajib pilih salah satu: Apakah kamu 'Pengguna' atau 'Mitra'?");
-                return; // STOP! Gak boleh lewat.
+                return; 
             }
   
-            // Kalau sudah pilih, bawa datanya ke halaman signup
             console.log("Mengarahkan ke signup sebagai:", selectedRole);
             window.location.href = `signup.html?role=${selectedRole}`;
         });
@@ -75,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
   
             try {
-                // Fetch ke Backend
                 const res = await fetch("http://localhost:3000/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -96,33 +92,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
                 // CEK 3: VALIDASI ROLE (Penting!)
-                // User pilih "Mitra" tapi di DB "Customer"? TOLAK.
                 if (user.role !== selectedRole) {
                     alert(`Gagal Masuk! Akun ini terdaftar sebagai "${user.role.toUpperCase()}", tapi kamu menekan tombol "${selectedRole.toUpperCase()}".`);
                     return; 
                 }
   
-                // === BAGIAN PENTING: SIMPAN DATA KE BROWSER ===
-                // Simpan User Object lengkap (untuk Profile Page)
+                
                 localStorage.setItem("currentUser", JSON.stringify(user));
-                // Simpan ID sebagai Token (cadangan untuk script lain)
                 localStorage.setItem("authToken", user.id); 
   
                 alert(`Login Berhasil sebagai ${selectedRole}!`);
   
-                // Redirect Sesuai Role
                 if (selectedRole === "mitra") {
                     try {
                         const check = await fetch(`http://localhost:3000/mitra/${user.id}/has-studio`);
                         const { hasStudio } = await check.json();
-                        // Sesuaikan path ini dengan struktur folder kamu
                         window.location.href = hasStudio ? "mitra/mitra-dashboard.html" : "mitra/daftar-studio.html";
                     } catch (innerErr) {
-                        // Fallback jika fetch check studio gagal
                         window.location.href = "mitra/mitra-dashboard.html";
                     }
                 } else {
-                    // Redirect Customer
                     window.location.href = "customer-app.html";
                 }
   

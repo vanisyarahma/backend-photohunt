@@ -11,9 +11,11 @@
         rel="stylesheet">
 
     <style>
+        /* --- GLOBAL STYLES --- */
         body {
             margin: 0;
             padding: 0;
+            background-color: #f5f5f5;
         }
 
         .ph-page-wrapper {
@@ -30,6 +32,7 @@
             box-sizing: border-box;
         }
 
+        /* --- HEADER (Desktop Default) --- */
         header {
             background: linear-gradient(180deg, #e0e0e0 0%, #f5f5f5 100%);
             padding: 0 40px;
@@ -50,7 +53,7 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 100%;
+            max-width: 1400px;
         }
 
         .logo {
@@ -133,21 +136,25 @@
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            /* Tambahan padding agar di HP tidak mepet pinggir */
+            padding: 0 15px; 
         }
 
+        /* --- CARD STYLE UTAMA (DESKTOP) --- */
         .search2 {
             background: #ffffff;
             border-radius: 12px;
             border: 1px solid #e0e0e0;
-            width: 95%;
+            width: 100%; /* Agar responsif */
             max-width: 1400px;
-            height: 173px;
-            position: relative;
+            height: 173px; /* Fixed height desktop */
+            position: relative; /* Kunci Absolute position anak-anaknya */
             flex-shrink: 0;
             transition: all 0.2s ease;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
             box-sizing: border-box;
+            display: block;
         }
 
         .search2:hover {
@@ -156,6 +163,7 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
         }
 
+        /* Elemen di dalam Card (Default Desktop Absolute) */
         .studio-name {
             color: #000000;
             font-size: 24px;
@@ -189,7 +197,6 @@
 
         .status-bg {
             border-radius: 6px;
-            /* Kotak sedikit membulat agar lebih tegas */
             width: 160px;
             height: 32px;
             position: absolute;
@@ -214,7 +221,6 @@
             text-transform: uppercase;
             letter-spacing: 0.8px;
             pointer-events: none;
-            /* Klik tembus ke card */
         }
 
         .btn-bayar-mini {
@@ -241,33 +247,38 @@
             position: absolute;
             right: 25px;
             top: 100px;
-            /* Sejajar dengan package-name */
             text-align: right;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 8px;
             color: rgba(0, 0, 0, 0.6);
-            width: 300px;
+            max-width: 300px;
+        }
+
+        .location-text {
+            font-size: 16px;
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+            display: block;
         }
 
         .date-container {
             position: absolute;
             right: 25px;
             top: 130px;
-            /* Sejajar dengan price-text */
             text-align: right;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 8px;
-            color: rgba(0, 0, 0, 0.0);
-            /* Sembunyikan jika diinginkan, tapi diminta posisi sejajar */
             color: rgba(0, 0, 0, 0.6);
             width: 300px;
         }
 
-        .location-text,
         .date-text {
             font-size: 16px;
             font-weight: 400;
@@ -279,15 +290,116 @@
             opacity: 0.6;
         }
 
-        @media (max-width: 900px) {
 
-            .location-container,
-            .date-container {
-                display: none;
+        /* ========================================= */
+        /* MEDIA QUERY: FIX OVERLAPPING (MOBILE)     */
+        /* ========================================= */
+        @media (max-width: 768px) {
+            
+            .ph-page-wrapper { padding-top: 100px; }
+            header { height: 80px; padding: 0 20px; }
+            .logo { font-size: 22px; }
+            .page-title { font-size: 22px; }
+
+            /* 1. CONTAINER CARD */
+            .search2 {
+                height: auto !important; /* Tinggi menyesuaikan isi */
+                min-height: 180px;
+                padding: 15px !important;
+                padding-bottom: 70px !important; /* Space untuk tombol bayar di bawah */
+                display: flex !important;
+                flex-direction: column !important; /* Susun ke bawah */
+                justify-content: flex-start !important;
             }
 
+            /* 2. RESET TOTAL SEMUA ANAK ELEMEN */
+            /* Ini akan memaksa semua teks (Nama, Paket, Harga) untuk nurut */
+            .search2 > div:not(.status-bg):not(.status-text), 
+            .search2 > span, 
+            .search2 > p {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                bottom: auto !important;
+                width: 100% !important;
+                margin: 0 !important;
+                transform: none !important;
+                text-align: left !important;
+                white-space: normal !important; /* Agar teks panjang turun ke bawah */
+            }
+
+            /* 3. ATUR URUTAN & JARAK MANUALLY (ORDERING) */
+            
+            /* Urutan 1: Nama Studio */
             .studio-name {
-                width: calc(100% - 200px);
+                order: 1;
+                font-size: 18px !important;
+                margin-top: 10px !important; /* Jarak dari atas */
+                margin-bottom: 5px !important;
+                padding-right: 110px !important; /* Supaya ga nabrak label status */
+                font-weight: 700 !important;
+                line-height: 1.3 !important;
+            }
+
+            /* Urutan 2: Nama Paket (Single) */
+            .package-name {
+                order: 2;
+                font-size: 14px !important;
+                color: #666 !important;
+                margin-bottom: 8px !important;
+            }
+
+            /* Urutan 3: Harga */
+            .price-text {
+                order: 3;
+                font-size: 18px !important;
+                font-weight: 700 !important;
+                margin-bottom: 15px !important;
+            }
+
+            /* Urutan 4 & 5: Lokasi & Tanggal */
+            .location-container {
+                order: 4;
+                margin-bottom: 5px !important;
+                justify-content: flex-start !important; /* Rata kiri */
+            }
+            .date-container {
+                order: 5;
+                margin-bottom: 0 !important;
+                justify-content: flex-start !important; /* Rata kiri */
+            }
+            .location-text, .date-text { font-size: 12px !important; }
+
+            /* 4. PENGECUALIAN: LABEL STATUS (Tetap di pojok kanan atas) */
+            .status-bg {
+                position: absolute !important;
+                top: 15px !important;
+                right: 15px !important;
+                left: auto !important;
+                width: 110px !important; /* Kecilin dikit */
+                height: 28px !important;
+                z-index: 20 !important;
+            }
+            .status-text {
+                position: absolute !important;
+                top: 15px !important;
+                right: 15px !important;
+                left: auto !important;
+                width: 110px !important;
+                height: 28px !important;
+                font-size: 10px !important;
+                z-index: 21 !important;
+            }
+
+            /* 5. TOMBOL BAYAR (Tetap di bawah) */
+            .btn-bayar-mini {
+                position: absolute !important;
+                bottom: 15px !important;
+                left: 15px !important;
+                right: 15px !important;
+                width: calc(100% - 30px) !important;
+                margin: 0 !important;
             }
         }
     </style>

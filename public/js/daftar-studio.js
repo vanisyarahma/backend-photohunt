@@ -6,7 +6,7 @@ if (!currentUser || currentUser.role !== "mitra") {
   throw new Error("INVALID MITRA SESSION");
 }
 
-const currentMitraId = currentUser.id; // ✅ ID ASLI DARI DB
+const currentMitraId = currentUser.id; 
 
 
 const STORAGE_KEY = `mitra_form_final_${currentMitraId}`;
@@ -108,7 +108,6 @@ function validateAndNext(btn) {
     }
   }
 
-  // Validasi Step Image (Index 1)
   if (currentStep === 1 && isValid) {
     const errorDiv = document.getElementById("image-error");
     if (selectedStudioImages.length === 0) {
@@ -229,7 +228,6 @@ async function handleFinalSubmit(e) {
   const form = document.getElementById("form-daftar-mitra");
   const formData = new FormData(form);
   formData.append("mitra_id", currentMitraId);
-  // ❗ pastikan file benar-benar dikirim
 selectedStudioImages.forEach(file => {
   formData.append("studio_images[]", file);
 });
@@ -258,5 +256,25 @@ selectedStudioImages.forEach(file => {
     alert(err.message);
     submitBtn.innerText = "Selesai & Daftarkan";
     submitBtn.disabled = false;
+  }
+}
+
+// --- FUNGSI BARU: PREVIEW LOGO ---
+function previewLogoRegister(input) {
+  const preview = document.getElementById('logo-preview-register');
+  const placeholder = document.getElementById('logo-placeholder-text');
+  
+  if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          placeholder.style.display = 'none';
+      }
+      reader.readAsDataURL(input.files[0]);
+  } else {
+      preview.src = '';
+      preview.style.display = 'none';
+      placeholder.style.display = 'block';
   }
 }

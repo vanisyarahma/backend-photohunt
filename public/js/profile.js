@@ -2,7 +2,7 @@ const API_BASE_URL = 'http://localhost:3000';
 
 function getAuthToken() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    return user ? user.id : null; 
+    return user ? user.id : null; // Asumsi token logic sederhana (bisa diganti JWT)
 }
 
 function getHeaders() {
@@ -32,12 +32,14 @@ async function loadProfile() {
 
         const user = await response.json();
         
+        // Update session storage dengan data terbaru
         localStorage.setItem('currentUser', JSON.stringify(user));
         
         populateForm(user);
 
     } catch (error) {
         console.error("Error Load Profile:", error);
+        // Jangan langsung redirect jika error koneksi, cek token dulu
         if (!getAuthToken()) {
             window.location.href = 'login.html';
         }
@@ -47,12 +49,15 @@ async function loadProfile() {
 function populateForm(user) {
     const displayName = document.getElementById('display-name-header');
     const displayEmail = document.getElementById('display-email-header');
+    
+    // Gunakan optional chaining (?.) dan OR (||) untuk keamanan
     if (displayName) displayName.innerText = user.name || 'User';
     if (displayEmail) displayEmail.innerText = user.email || '';
     
     const avatarImg = document.getElementById('avatar-img');
     if(avatarImg) {
         if(user.image) {
+            // Tambah timestamp agar gambar tidak cache saat diupdate
             avatarImg.src = `${API_BASE_URL}/images/users/${user.image}?t=${new Date().getTime()}`;
             avatarImg.style.display = 'block';
         } else {
@@ -75,23 +80,22 @@ function populateForm(user) {
 
     const inputGender = document.getElementById('input-gender');
     if (inputGender) inputGender.value = user.gender || ''; 
-
-    const inputLocation = document.getElementById('input-location');
-    if (inputLocation) inputLocation.value = user.location || '';
     
     const inputBirthday = document.getElementById('input-birthday');
     if (inputBirthday && user.birthday) {
-        inputBirthday.value = user.birthday.split('T')[0];
+        // Format tanggal yyyy-MM-dd untuk input type date
+        inputBirthday.value = new Date(user.birthday).toISOString().split('T')[0];
     }
 }
 
+// UPDATE PROFILE
 const btnSaveProfile = document.getElementById('btn-save-profile');
 if (btnSaveProfile) {
     btnSaveProfile.addEventListener('click', async () => {
+        // Ambil data form (TANPA LOCATION)
         const updatedData = {
             name: document.getElementById('input-name')?.value.trim(),
             phone: document.getElementById('input-phone')?.value.trim(),
-            location: document.getElementById('input-location')?.value.trim(),
             gender: document.getElementById('input-gender')?.value,
             birthday: document.getElementById('input-birthday')?.value
         };
@@ -107,8 +111,11 @@ if (btnSaveProfile) {
 
             if (!response.ok) throw new Error(result.message || 'Gagal update profil');
 
-            document.getElementById('display-name-header').innerText = updatedData.name;
+            // Update UI Header
+            const headerName = document.getElementById('display-name-header');
+            if(headerName) headerName.innerText = updatedData.name;
             
+            // Update LocalStorage
             const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
             const newSessionData = { ...currentUser, ...updatedData };
             localStorage.setItem('currentUser', JSON.stringify(newSessionData));
@@ -121,6 +128,7 @@ if (btnSaveProfile) {
     });
 }
 
+// GANTI PASSWORD
 const btnSavePassword = document.getElementById('btn-save-password');
 if (btnSavePassword) {
     btnSavePassword.addEventListener('click', async () => {
@@ -132,26 +140,18 @@ if (btnSavePassword) {
         if (newPass.length < 6) return alert('Password minimal 6 karakter.');
         if (newPass !== confirmPass) return alert('Konfirmasi password tidak cocok.');
 
-        const payload = {
-            currentPassword: currentPass,
-            newPassword: newPass
-        };
-
         try {
             const response = await fetch(`${API_BASE_URL}/change-password`, {
                 method: 'POST', 
                 headers: getHeaders(),
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
             });
 
             const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.message || 'Gagal mengganti password');
-            }
+            if (!response.ok) throw new Error(result.message || 'Gagal mengganti password');
 
             alert('Password berhasil diubah. Silakan login ulang.');
-            
             localStorage.removeItem('currentUser');
             window.location.href = 'login.html'; 
 
@@ -162,6 +162,7 @@ if (btnSavePassword) {
     });
 }
 
+// UPLOAD FOTO
 const fileInput = document.getElementById('file-input-profile');
 if (fileInput) {
     fileInput.addEventListener('change', async (e) => {
@@ -180,19 +181,18 @@ if (fileInput) {
             const token = getAuthToken();
             const response = await fetch(`${API_BASE_URL}/profile/upload-photo`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
+                headers: { 'Authorization': token ? `Bearer ${token}` : '' },
                 body: formData
             });
 
             const result = await response.json();
-
             if (!response.ok) throw new Error(result.message || "Gagal upload");
 
             const avatarImg = document.getElementById('avatar-img');
-            avatarImg.src = `${API_BASE_URL}/images/users/${result.image}?t=${new Date().getTime()}`;
-            avatarImg.style.display = 'block';
+            if(avatarImg) {
+                avatarImg.src = `${API_BASE_URL}/images/users/${result.image}?t=${new Date().getTime()}`;
+                avatarImg.style.display = 'block';
+            }
 
             const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
             currentUser.image = result.image;

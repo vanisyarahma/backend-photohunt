@@ -21,6 +21,9 @@ const myId = currentUser.id;
 /* =====================
    2. DOM ELEMENTS
 ===================== */
+const chatContainerMain = document.getElementById("chatContainerMain");
+const mobileBackBtn = document.getElementById("mobile-back-btn");
+
 const emptyState = document.getElementById("emptyState");
 const chatRoom = document.getElementById("chatRoom");
 const chatList = document.getElementById("chatList");
@@ -28,97 +31,87 @@ const headerName = document.getElementById("headerName");
 const headerAvatar = document.getElementById("headerAvatar");
 const msgInput = document.getElementById("msgInput");
 const msgsContainer = document.getElementById("messagesContainer");
+const sendBtn = document.getElementById("sendBtn");
 
 let currentCustomerId = null;
 let ROOM_ID = null;
 
 /* =====================
-   3. BACK BUTTON
-===================== */
-const backBtn = document.querySelector(".back-link");
-if (backBtn) {
-  backBtn.onclick = (e) => {
-    e.preventDefault();
-    window.location.href = "mitra-dashboard.html";
-  };
-}
-
-/* =====================
-   4. INIT (MODIFIED FOR URL PARAM)
+   3. INITIALIZATION & LISTENERS
 ===================== */
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Load History Chat di Sidebar dulu
+  // 1. Setup Tombol Navigasi (Back)
+  setupNavigationButtons();
+
+  // 2. Load Sidebar
   await loadSidebarHistory();
 
-  // 2. Cek apakah ada bookingId di URL?
+  // 3. Cek URL Booking ID (Auto Open)
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get('bookingId');
 
   if (bookingId) {
-    // Jika ada, cari data customer dari booking tersebut
     initChatFromBooking(bookingId);
   }
+
+  if (sendBtn) sendBtn.addEventListener("click", sendMessage);
 });
 
-// FUNGSI BARU: Cari data customer berdasarkan Booking ID
-async function initChatFromBooking(bookingId) {
-    try {
-        // Kita pakai endpoint yang sama dengan halaman Reservasi (pasti jalan)
-        const res = await fetch(`${API_BASE_URL}/mitra/bookings/${myId}`);
-        if (!res.ok) throw new Error("Gagal fetch data booking");
+function setupNavigationButtons() {
+    // Tombol Back ke Dashboard (Desktop Header)
+    const dashboardBackBtn = document.querySelector(".back-link");
+    if (dashboardBackBtn) {
+        dashboardBackBtn.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = "mitra-dashboard.html";
+        };
+    }
 
-        const data = await res.json();
-        
-        // Cari booking yang ID-nya cocok (pastikan tipe data sama string/number)
-        const booking = data.find(item => item.id == bookingId);
-
-        if (booking) {
-            // Pastikan backend mengirim field customer_id (atau user_id)
-            const cId = booking.customer_id || booking.user_id; 
-            const cName = booking.customer_name;
-            const cImage = booking.customer_image || booking.user_image || null;
-
-            if (cId) {
-                console.log("Auto-opening chat for:", cName);
-                openChat(cId, cName, cImage);
-            } else {
-                console.error("Data booking ditemukan, tapi customer_id hilang.");
-            }
-        }
-    } catch (err) {
-        console.error("Error auto-opening chat:", err);
+    // Tombol Back dari Chat Room ke List (Mobile Header)
+    if (mobileBackBtn) {
+        mobileBackBtn.onclick = () => {
+            // Hapus class agar Sidebar muncul kembali
+            if (chatContainerMain) chatContainerMain.classList.remove('mobile-view-active');
+            
+            // Hapus highlight visual pada item sidebar
+            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            currentCustomerId = null;
+        };
     }
 }
 
 /* =====================
-   5. OPEN CHAT
+   4. LOGIC: OPEN CHAT
 ===================== */
 async function openChat(customerId, customerName, customerImage) {
   currentCustomerId = customerId;
 
-  emptyState.style.display = "none";
-  chatRoom.style.display = "flex";
+  // [LOGIKA UI MOBILE] Pindah layar ke Chat Room
+  if (chatContainerMain) {
+      chatContainerMain.classList.add('mobile-view-active');
+  }
+
+  // [VISUAL] Highlight item sidebar aktif
+  updateActiveSidebarItem(customerId);
+
+  // UI Setup
+  if (emptyState) emptyState.style.display = "none";
+  if (chatRoom) chatRoom.style.display = "flex";
+  
   headerName.textContent = customerName;
 
   // Set Header Avatar
   headerAvatar.innerHTML = ""; 
-  headerAvatar.style.overflow = "hidden"; 
-
+  headerAvatar.style.backgroundImage = "none";
+  
   if (customerImage) {
-      const img = document.createElement("img");
-      img.src = `${API_BASE_URL}/images/users/${customerImage}`;
-      img.style.width = "100%";
-      img.style.height = "100%";
-      img.style.objectFit = "cover";
-      img.onerror = function() {
-          this.style.display = 'none';
-          headerAvatar.textContent = customerName.charAt(0).toUpperCase();
-      };
-      headerAvatar.appendChild(img);
+      headerAvatar.style.backgroundImage = `url('${API_BASE_URL}/images/users/${customerImage}')`;
   } else {
-      headerAvatar.textContent = customerName.charAt(0).toUpperCase();
+      headerAvatar.style.backgroundColor = "#ddd";
+      headerAvatar.innerText = customerName.charAt(0).toUpperCase();
   }
 
+  // Socket Room Setup
   const ids = [myId, customerId].sort((a, b) => a - b);
   ROOM_ID = `room_${ids[0]}_${ids[1]}`;
 
@@ -128,8 +121,41 @@ async function openChat(customerId, customerName, customerImage) {
   await loadMessages();
 }
 
+// Helper: Highlight Sidebar
+function updateActiveSidebarItem(activeId) {
+    document.querySelectorAll('.chat-item').forEach(item => {
+        item.classList.remove('active');
+        if(item.dataset.id == activeId) item.classList.add('active');
+    });
+}
+
 /* =====================
-   6. SIDEBAR HISTORY
+   5. AUTO OPEN FROM BOOKING
+===================== */
+async function initChatFromBooking(bookingId) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/mitra/bookings/${myId}`);
+        if (!res.ok) throw new Error("Gagal fetch data booking");
+
+        const data = await res.json();
+        const booking = data.find(item => item.id == bookingId);
+
+        if (booking) {
+            const cId = booking.customer_id || booking.user_id; 
+            const cName = booking.customer_name;
+            const cImage = booking.customer_image || booking.user_image || null;
+
+            if (cId) {
+                openChat(cId, cName, cImage);
+            }
+        }
+    } catch (err) {
+        console.error("Error auto-opening chat:", err);
+    }
+}
+
+/* =====================
+   6. LOAD SIDEBAR HISTORY
 ===================== */
 async function loadSidebarHistory() {
   try {
@@ -146,20 +172,19 @@ async function loadSidebarHistory() {
       chats.forEach(c => {
         const div = document.createElement("div");
         div.className = "chat-item";
+        div.setAttribute("data-id", c.partner_id);
+
         div.onclick = () => openChat(c.partner_id, c.partner_name, c.partner_image);
 
-        // Sidebar Avatar Logic
         let avatarHTML = "";
         if (c.partner_image) {
-            avatarHTML = `<img src="${API_BASE_URL}/images/users/${c.partner_image}" 
-                          style="width:100%; height:100%; object-fit:cover; border-radius:50%;"
-                          onerror="this.parentElement.innerText='${c.partner_name.charAt(0).toUpperCase()}'">`;
+            avatarHTML = `<div class="avatar" style="background-image: url('${API_BASE_URL}/images/users/${c.partner_image}');"></div>`;
         } else {
-            avatarHTML = c.partner_name.charAt(0).toUpperCase();
+            avatarHTML = `<div class="avatar" style="background-color: #ddd;">${c.partner_name.charAt(0).toUpperCase()}</div>`;
         }
 
         div.innerHTML = `
-          <div class="avatar" style="overflow:hidden;">${avatarHTML}</div>
+          ${avatarHTML}
           <div class="chat-info">
             <div class="chat-name">${c.partner_name}</div>
             <div class="chat-preview">${c.last_message || ""}</div>
@@ -173,42 +198,56 @@ async function loadSidebarHistory() {
 }
 
 /* =====================
-   7. LOAD MESSAGES
+   7. LOAD MESSAGES (WITH TIMESTAMP)
 ===================== */
 async function loadMessages() {
-  msgsContainer.innerHTML = "";
+  msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:#888;">Memuat...</div>`;
 
-  const res = await fetch(
-    `${API_BASE_URL}/chats?user1=${myId}&user2=${currentCustomerId}`
-  );
-  const msgs = await res.json();
+  try {
+      const res = await fetch(`${API_BASE_URL}/chats?user1=${myId}&user2=${currentCustomerId}`);
+      const msgs = await res.json();
+      msgsContainer.innerHTML = "";
 
-  msgs.forEach(m => {
-    const type = m.sender_id === myId ? "sent" : "received";
-    addBubble(m.message, type);
-  });
-  
-  msgsContainer.scrollTop = msgsContainer.scrollHeight;
+      if (!msgs.length) {
+          msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:#888;">Mulai obrolan baru 👋</div>`;
+          return;
+      }
+
+      msgs.forEach(m => {
+        const type = m.sender_id === myId ? "sent" : "received";
+        addBubble(m.message, type, m.created_at);
+      });
+      
+      scrollBottom();
+  } catch (err) {
+      msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:red;">Gagal memuat</div>`;
+  }
 }
 
 /* =====================
-   8. SEND MESSAGE
+   8. SEND MESSAGE (WITH TIMESTAMP)
 ===================== */
 function sendMessage() {
   const text = msgInput.value.trim();
   if (!text) return;
 
-  addBubble(text, "sent");
-  msgInput.value = "";
-  msgsContainer.scrollTop = msgsContainer.scrollHeight;
+  const timestamp = new Date().toISOString();
 
+  // Optimistic UI Update
+  addBubble(text, "sent", timestamp);
+  msgInput.value = "";
+  scrollBottom();
+
+  // Emit Socket
   socket.emit("send_message", {
     room: ROOM_ID,
     sender_id: myId,
     receiver_id: currentCustomerId,
-    message: text
+    message: text,
+    timestamp: timestamp
   });
 
+  // Save DB
   fetch(`${API_BASE_URL}/chats`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -225,24 +264,49 @@ function sendMessage() {
 ===================== */
 socket.on("receive_message", data => {
   if (data.sender_id == currentCustomerId) {
-    addBubble(data.message, "received");
-    msgsContainer.scrollTop = msgsContainer.scrollHeight;
+    addBubble(data.message, "received", data.timestamp);
+    scrollBottom();
   }
 });
 
 /* =====================
-   10. UI HELPER
+   10. HELPER FUNCTIONS
 ===================== */
-function addBubble(text, type) {
+function addBubble(text, type, timestamp) {
   const div = document.createElement("div");
   div.className = `bubble ${type}`;
-  div.innerText = text;
+  
+  div.innerHTML = `
+      <div class="message-text">${escapeHtml(text)}</div>
+      <div class="message-time">${formatTime(timestamp)}</div>
+  `;
   msgsContainer.appendChild(div);
 }
 
-msgInput.addEventListener("keypress", function(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    sendMessage();
-  }
-});
+function scrollBottom() {
+    setTimeout(() => msgsContainer.scrollTop = msgsContainer.scrollHeight, 100);
+}
+
+function formatTime(timestamp) {
+    if (!timestamp) return "";
+    try {
+        let dateStr = timestamp;
+        if (typeof timestamp === 'string' && timestamp.indexOf(' ') > 0 && timestamp.indexOf('T') === -1) {
+            dateStr = timestamp.replace(' ', 'T');
+        }
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return "";
+        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '.');
+    } catch (e) { return ""; }
+}
+
+function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+
+if (msgInput) {
+  msgInput.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+}

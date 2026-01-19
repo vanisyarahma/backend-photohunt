@@ -13,16 +13,14 @@ async function fetchDashboardData(mitraId) {
     try {
         console.log("Fetching data for Mitra ID:", mitraId);
 
-        // Panggil Endpoint Backend (Pastikan backend kamu jalan di port 3000)
-        // Endpoint ini harus kamu buat di server.js: app.get('/mitra/dashboard/:id', ...)
-        const response = await fetch(`/mitra/dashboard/${mitraId}`);
+       const response = await fetch(`/mitra/dashboard/${mitraId}`);
 
         if (!response.ok) {
             throw new Error("Gagal mengambil data dashboard");
         }
 
         const data = await response.json();
-        renderDashboard(data); // Kalau sukses, render datanya
+        renderDashboard(data); // SUDAH DIPERBAIKI (huruf 'a' dihapus)
 
     } catch (err) {
         console.error("Error Fetching:", err);
@@ -54,7 +52,6 @@ function renderDashboard(data) {
         if (!data.cancellationRequests || data.cancellationRequests.length === 0) {
             renderEmptyState(listCancel, "Tidak ada pengajuan");
         } else {
-            // Tampilkan Max 2 saja biar gak kepanjangan
             data.cancellationRequests.slice(0, 2).forEach(item => {
                 listCancel.innerHTML += `
                 <div class="mitra-dashboard-list-item mitra-dashboard-item-orange" style="cursor:pointer;" onclick="window.location.href='pembatalan-mitra.html'">
@@ -168,3 +165,16 @@ async function handleQuickRefund(cancellationId) {
         alert("Terjadi kesalahan saat menghubungi server");
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.getElementById('btnLogout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            if (confirm("Apakah Anda yakin ingin keluar?")) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('activeMitraId'); 
+                window.location.href = '../login.html';
+            }
+        });
+    }
+});

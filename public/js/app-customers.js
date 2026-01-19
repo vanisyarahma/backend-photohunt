@@ -64,8 +64,6 @@ const scope = {
       const card = document.createElement("div");
       card.className = "studio-card";
 
-      // MENGGUNAKAN price_range karena kolom 'price' di DB bernilai NULL
-      // Jika price_range ada isinya, tampilkan. Jika tidak, tampilkan pesan default.
       const displayPrice = studio.price_range ? studio.price_range : "Harga belum diatur";
 
       card.innerHTML = `

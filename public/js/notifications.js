@@ -9,9 +9,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     console.log(`🔔 Sistem Notifikasi Aktif untuk User ID: ${currentUser.id} (${currentUser.name})`);
 
-    const socket = io();
+    // PERBAIKAN: Tentukan URL Backend secara spesifik agar tidak error koneksi
+    const socket = io("http://localhost:3000"); 
+
     const notifDot = document.getElementById("chat-notif-dot");
-    const notificationSound = new Audio('/audio/notify.mp3'); // Pastikan file ada, atau hapus baris ini
+    const notificationSound = new Audio('/audio/notify.mp3'); 
 
     // ==========================================
     // 1. CEK UNREAD DARI DATABASE (SAAT LOAD)
@@ -20,39 +22,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log("🔍 Mengecek pesan belum dibaca ke Database...");
         
         const res = await fetch(`http://localhost:3000/chats/unread/${currentUser.id}`);
+        
+        // Cek jika response server bukan OK (200)
+        if (!res.ok) throw new Error(`Server Error: ${res.status}`);
+
         const data = await res.json();
         
         console.log(`📊 Hasil Cek Database: Ada ${data.total} pesan belum dibaca.`);
 
-        if (data.total > 0) {
+        if (data && data.total > 0) {
             showDot();
         } else {
             console.log("⚪ Tidak ada notifikasi baru.");
             hideDot();
         }
     } catch (err) {
-        console.error("❌ Gagal cek notif:", err);
+        console.error("❌ Gagal mengambil data notifikasi:", err);
     }
 
     // ==========================================
     // 2. DENGAR NOTIFIKASI REAL-TIME (SOCKET)
     // ==========================================
-    socket.on("new_message", (data) => {
-        console.log("📨 [SOCKET] Ada pesan masuk di server!", data);
+    socket.on("connect", () => {
+        console.log("✅ Terhubung ke Socket Server dengan ID:", socket.id);
+    });
 
-        // Logika Pengecekan
+    socket.on("new_message", (data) => {
+        console.log("📨 [SOCKET] Ada pesan masuk!", data);
+
+        // Pakai '==' agar aman jika satu string satu integer
         if (data.receiver_id == currentUser.id) {
             console.log("✅ Pesan ini untuk SAYA! Menyalakan notifikasi...");
             
             showDot();
             
-            // Mainkan suara (Opsional)
-            // notificationSound.play().catch(e => console.log("Audio play blocked by browser"));
+            // Opsional: Mainkan suara jika browser mengizinkan
+            notificationSound.play().catch(() => console.log("🔊 Audio autoplay diblokir browser"));
             
-        } else if (data.sender_id == currentUser.id) {
-            console.log("📤 Ini pesan yang SAYA kirim (Abaikan).");
         } else {
-            console.log(`❌ Pesan bukan untuk saya. (Untuk ID: ${data.receiver_id})`);
+            // Debugging tambahan biar tau pesan nyasar kemana
+            console.log(`❌ Pesan diabaikan. (Target: ${data.receiver_id} | Saya: ${currentUser.id})`);
         }
     });
 
@@ -61,11 +70,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ==========================================
     function showDot() {
         if (notifDot) {
-            console.log("🔴 [UI] Menampilkan Titik Merah!");
             notifDot.style.display = "block";
             notifDot.classList.add("pulse-animation");
         } else {
-            console.warn("⚠️ Elemen #chat-notif-dot tidak ditemukan di HTML!");
+            console.warn("⚠️ Elemen HTML dengan ID 'chat-notif-dot' tidak ditemukan!");
         }
     }
 

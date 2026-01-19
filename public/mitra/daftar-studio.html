@@ -514,7 +514,21 @@
 
         <section class="dm-step">
           <h2 class="dm-section-title">Fasilitas & Media</h2>
-
+          <div class="dm-field-group">
+            <label class="dm-label">Logo Studio (Opsional tapi Disarankan)</label>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #d1d5db; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #f9fafb; flex-shrink: 0;">
+                    <img id="logo-preview-register" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    <span id="logo-placeholder-text" style="font-size: 10px; color: #9ca3af; text-align: center;">No Logo</span>
+                </div>
+                
+                <div style="flex: 1;">
+                    <input type="file" name="logo" class="dm-input" accept="image/*" onchange="previewLogoRegister(this)">
+                    <small style="color: #6b7280; font-size: 12px; margin-top: 4px;">Format: JPG/PNG. Disarankan rasio 1:1 (Kotak).</small>
+                </div>
+            </div>
+          </div>
+          
           <div class="dm-field-group">
             <label class="dm-label">Fasilitas Studio (Minimal 1) *</label>
             <div id="facility-container">

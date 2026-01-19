@@ -1,4 +1,3 @@
-
 class Utils {
     static formatCurrency(amount) {
         return new Intl.NumberFormat('id-ID', {
@@ -205,13 +204,11 @@ class BookingManager {
         this.setupBookingEvents();
         this.initializeDatePicker();
     }
+    
     setupBookingEvents() {
-        // --- Event Listener Tombol Reservasi ---
         const reserveBtn = document.getElementById('reserveBtn');
         if (reserveBtn) reserveBtn.addEventListener('click', () => this.startReservation());
 
-        // --- [BARU] LOGIKA CHAT VIA APP (BAJAK TOMBOL WA) ---
-        // Ini yang bikin tombol "Chat WhatsApp" jadi lari ke "Chat App Internal"
         const chatBtn = document.getElementById('chatWithPartnerBtn');
         if (chatBtn) {
             chatBtn.addEventListener('click', (e) => {
@@ -220,7 +217,6 @@ class BookingManager {
             });
         }
 
-        // --- Event Listener Lainnya (Biarkan Saja) ---
         const viewRouteBtn = document.getElementById('viewRouteBtn');
         if (viewRouteBtn) viewRouteBtn.addEventListener('click', () => this.viewRoute());
 
@@ -254,25 +250,15 @@ class BookingManager {
             return;
         }
 
-        // LOGIC PINTAR:
-        // Kalau ada 'mitra_id' (ID 8), pakai itu buat chat.
-        // Kalau apes gak ada, terpaksa pakai 'id' studio (ID 13).
         const partnerId = this.app.currentStudio.mitra_id || this.app.currentStudio.id;
-
         const partnerName = encodeURIComponent(this.app.currentStudio.name);
-        // Bawa foto pertama sebagai foto profil chat (kalau ada)
         const partnerPhoto = encodeURIComponent(this.app.currentStudio.gallery?.[0] || '');
 
-        console.log(`Membuka Chat Room dengan Mitra ID: ${partnerId}`);
-
-        // Redirect ke chat.html membawa ID yang BENAR (ID 8)
         window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_photo=${partnerPhoto}`;
     }
+    
     initializeDatePicker() {
         const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
         const formattedToday = today.toISOString().split('T')[0];
 
         const datePicker = document.getElementById('datePicker');
@@ -395,30 +381,42 @@ class BookingManager {
         window.location.href = `reservasi.html?${params.toString()}`;
     }
 
-    openChat() {
-        window.location.href = `chat.html?studioId=${this.app.currentStudioId}`;
-    }
-
     viewRoute() {
-        const coordinates = this.app.currentStudio.coordinates;
-        if (coordinates) {
-            const [lat, lng] = coordinates.split(',');
-            const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-            window.open(url, '_blank');
-        } else {
-            this.openMaps();
+        const studio = this.app.currentStudio;
+
+        // 1. Prioritas Utama: Cek Link Gmaps dari Database
+        if (studio.gmaps_link && studio.gmaps_link.trim() !== "") {
+            window.open(studio.gmaps_link, '_blank');
+            return;
         }
+
+        // 2. Fallback: Jika link kosong, gunakan pencarian Alamat
+        this.openMaps();
     }
 
     openMaps() {
-        const address = encodeURIComponent(`${this.app.currentStudio.address}, ${this.app.currentStudio.city}`);
-        const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
-        window.open(url, '_blank');
+        const studio = this.app.currentStudio;
+
+        // Cek lagi linknya (untuk jaga-jaga jika dipanggil langsung)
+        if (studio.gmaps_link && studio.gmaps_link.trim() !== "") {
+            window.open(studio.gmaps_link, '_blank');
+            return;
+        }
+
+        // 3. Opsi Terakhir: Cari manual di Google Maps pakai Nama Kota + Alamat
+        if (studio.address || studio.city) {
+            const query = encodeURIComponent(`${studio.address || ''}, ${studio.city || ''}`);
+            // Menggunakan format pencarian universal Google Maps
+            const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+            window.open(url, '_blank');
+        } else {
+            Utils.showError("Lokasi studio tidak tersedia.");
+        }
     }
 }
+
 class StudioApp {
     constructor() {
-        // this.db = new StudioDatabase();
         this.currentStudioId = this.getStudioIdFromURL();
         this.currentUser = this.getCurrentUser();
         this.currentStudio = null;
@@ -437,8 +435,6 @@ class StudioApp {
         return user ? JSON.parse(user) : null;
     }
 
-
-
     init() {
         this.currentUser = this.getCurrentUser();
 
@@ -455,7 +451,6 @@ class StudioApp {
         this.setupEventListeners();
     }
 
-
     async loadStudioData() {
         try {
             const res = await fetch(
@@ -465,44 +460,38 @@ class StudioApp {
             if (!res.ok) throw new Error("Studio tidak ditemukan");
 
             const data = await res.json();
-
-            // ===== MAP SCHEDULE =====
             const schedMap = {};
             data.schedules.forEach(s => {
-                schedMap[s.day] = s;
+                if (s.day) {
+                    schedMap[s.day.toLowerCase()] = s;
+                }
             });
 
-            // ===== SATU KALI SET currentStudio (PENTING) =====
+            const getHours = (dayName) => {
+                const s = schedMap[dayName];
+                if (!s) return "Tutup";
+                if (!s.open_time || !s.close_time) return "Libur";
+                return `${s.open_time.substring(0, 5)} - ${s.close_time.substring(0, 5)}`;
+            };
+
+            const isOpenNow = this.checkOpenStatus(schedMap);
+            const seninHours = getHours('senin');
+            const sabtuHours = getHours('sabtu');
+
             this.currentStudio = {
                 ...data.studio,
-
-                gallery: data.images.map(i =>
-                    `/images/studios/${i.image}`
-                ),
-
+                gallery: data.images.map(i => `/images/studios/${i.image}`),
                 facilities: data.facilities.map(f => f.facility),
-
                 packages: data.packages,
-
                 schedules: data.schedules,
-
                 reviews: data.reviews,
-
                 hours: {
-                    weekdays: schedMap.senin
-                        ? `${schedMap.senin.open_time.substring(0, 5)} - ${schedMap.senin.close_time.substring(0, 5)}`
-                        : "-",
-                    weekends: schedMap.sabtu
-                        ? `${schedMap.sabtu.open_time.substring(0, 5)} - ${schedMap.sabtu.close_time.substring(0, 5)}`
-                        : "-",
-                    isOpen: true
+                    weekdays: seninHours,
+                    weekends: sabtuHours,
+                    isOpen: isOpenNow
                 }
             };
 
-            console.log("✅ DETAIL STUDIO:", this.currentStudio);
-            console.log("FINAL STUDIO OBJECT:", this.currentStudio);
-
-            // ===== RENDER =====
             this.renderStudioData();
             this.galleryManager.renderGallery();
             this.renderPackages();
@@ -515,6 +504,35 @@ class StudioApp {
         }
     }
 
+    checkOpenStatus(schedMap) {
+        const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+        const now = new Date();
+        const todayName = days[now.getDay()];
+        const schedule = schedMap[todayName];
+
+        if (!schedule || !schedule.open_time || !schedule.close_time) {
+            return false;
+        }
+
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const openParts = schedule.open_time.split(':');
+        const closeParts = schedule.close_time.split(':');
+        
+        if (openParts.length < 2 || closeParts.length < 2) {
+            return false;
+        }
+
+        const openH = parseInt(openParts[0]);
+        const openM = parseInt(openParts[1]);
+        const closeH = parseInt(closeParts[0]);
+        const closeM = parseInt(closeParts[1]);
+
+        const openMinutes = openH * 60 + openM;
+        const closeMinutes = closeH * 60 + closeM;
+
+        return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+    }
+
     renderStudioData() {
         const setText = (id, text) => {
             const el = document.getElementById(id);
@@ -523,64 +541,65 @@ class StudioApp {
 
         const studio = this.currentStudio || {};
 
-        // ===== BASIC INFO =====
         setText('studioName', studio.name);
-        setText('studioLocation', studio.location);
+        setText('studioLocation', studio.location || studio.city);
         setText('studioAddress', studio.address);
         setText('studioCity', studio.city);
-        setText('studioDescription', studio.description);
-        setText('studioCapacity', studio.capacity);
-        setText('phoneNumber', studio.phone);
+        setText('studioDescription', studio.description || 'Tidak ada deskripsi');
+        setText('studioCapacity', `Kapasitas max ${studio.capacity || '-'} orang`);
+        setText('phoneNumber', studio.phone || '-');
 
-        // ===== RATING (ANTI ERROR) =====
-        const rating =
-            studio.rating !== null &&
-                studio.rating !== undefined &&
-                !isNaN(studio.rating)
-                ? Number(studio.rating)
-                : null;
+        const rating = studio.rating !== null &&
+            studio.rating !== undefined &&
+            !isNaN(studio.rating)
+            ? Number(studio.rating)
+            : null;
 
-        const totalReviews =
-            studio.totalReviews !== null &&
-                studio.totalReviews !== undefined
-                ? Number(studio.totalReviews)
-                : 0;
+        const totalReviews = studio.totalReviews !== null &&
+            studio.totalReviews !== undefined
+            ? Number(studio.totalReviews)
+            : 0;
 
-        setText(
-            'sidebarRating',
-            rating !== null ? rating.toFixed(1) : '-'
-        );
+        setText('sidebarRating', rating !== null ? rating.toFixed(1) : '-');
+        setText('sidebarReviewCount', totalReviews > 0 ? totalReviews.toLocaleString() + ' ulasan' : 'Belum ada ulasan');
+        setText('sidebarLocation', studio.location || studio.city);
 
-        setText(
-            'sidebarReviewCount',
-            totalReviews > 0
-                ? totalReviews.toLocaleString() + ' ulasan'
-                : 'Belum ada ulasan'
-        );
-
-        setText('sidebarLocation', studio.location);
-
-        // ===== JAM OPERASIONAL =====
         const hours = studio.hours || {};
-
         setText('weekdayHours', hours.weekdays || '-');
         setText('weekendHours', hours.weekends || '-');
-        setText(
-            'sidebarHours',
-            hours.weekdays ? `Buka: ${hours.weekdays}` : 'Jam belum tersedia'
-        );
+        
+        if (hours.isOpen) {
+            setText('sidebarHours', 'Buka Sekarang');
+        } else {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const schedule = this.currentStudio?.schedules?.find(s => 
+                s.day.toLowerCase() === 'senin'
+            );
+            
+            if (schedule && (!schedule.open_time || !schedule.close_time)) {
+                setText('sidebarHours', 'Libur Hari Ini');
+            } else if (currentTime < 480) {
+                setText('sidebarHours', 'Tutup (Buka nanti)');
+            } else if (currentTime > 1020) {
+                setText('sidebarHours', 'Tutup (Buka besok)');
+            } else {
+                setText('sidebarHours', 'Sedang Tutup');
+            }
+        }
 
-        // ===== STATUS BUKA / TUTUP =====
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
 
         if (statusDot && statusText) {
             if (hours.isOpen) {
                 statusDot.style.background = '#10B981';
-                statusText.textContent = 'Buka sekarang';
+                statusText.textContent = 'Buka Sekarang';
+                statusText.style.color = '#10B981';
             } else {
                 statusDot.style.background = '#EF4444';
-                statusText.textContent = 'Tutup';
+                statusText.textContent = 'Sedang Tutup';
+                statusText.style.color = '#EF4444';
             }
         }
     }
@@ -591,13 +610,12 @@ class StudioApp {
 
         packagesContainer.innerHTML = '';
 
-        let packagesToShow = this.currentStudio.packages;
+        let packagesToShow = this.currentStudio.packages || [];
         if (this.searchQuery) {
             const query = this.searchQuery.toLowerCase();
             packagesToShow = packagesToShow.filter(pkg =>
                 pkg.name.toLowerCase().includes(query) ||
                 (pkg.description || '').toLowerCase().includes(query)
-
             );
         }
 
@@ -638,10 +656,8 @@ class StudioApp {
         `;
 
         card.addEventListener('click', () => this.bookingManager.startBooking(pkg));
-
         return card;
     }
-
 
     renderReviews() {
         if (!this.currentStudio.reviews) return;
@@ -690,41 +706,6 @@ class StudioApp {
         }
     }
 
-    renderFacilities() {
-        const mainContainer = document.getElementById("mainFacilities");
-        const allContainer = document.getElementById("allFacilities");
-
-        if (mainContainer) mainContainer.innerHTML = "";
-        if (allContainer) allContainer.innerHTML = "";
-
-        const facilities = this.currentStudio.facilities || [];
-
-        if (facilities.length === 0) {
-            const emptyMsg = `<p class="ds-body-text">Fasilitas belum tersedia</p>`;
-            if (mainContainer) mainContainer.innerHTML = emptyMsg;
-            if (allContainer) allContainer.innerHTML = emptyMsg;
-            return;
-        }
-
-        facilities.forEach((facility, index) => {
-            const item = document.createElement("div");
-            item.className = "facility-item";
-            item.innerHTML = `
-                <span class="facility-icon">✔</span>
-                <span class="facility-text">${facility}</span>
-            `;
-
-            // Masukkan ke "Fasilitas Lengkap" (Tab Fasilitas)
-            if (allContainer) allContainer.appendChild(item.cloneNode(true));
-
-            // Masukkan ke "Fasilitas Utama" (Tab Overview) max 4
-            if (mainContainer && index < 4) {
-                mainContainer.appendChild(item);
-            }
-        });
-    }
-
-
     renderRatingBars() {
         const barsContainer = document.getElementById('ratingBars');
         if (!barsContainer) return;
@@ -759,11 +740,9 @@ class StudioApp {
             countLabel.textContent = count.toLocaleString();
 
             barContainer.appendChild(barFill);
-
             barRow.appendChild(ratingLabel);
             barRow.appendChild(barContainer);
             barRow.appendChild(countLabel);
-
             barsContainer.appendChild(barRow);
         });
     }
@@ -787,28 +766,25 @@ class StudioApp {
             const info = document.createElement('div');
             info.className = 'ds-reviewer-info';
 
-            // 1. Nama
             const name = document.createElement('div');
             name.className = 'ds-card-title';
             name.style.marginBottom = '4px';
             name.textContent = review.reviewer;
 
-            // 2. Bintang (di bawah nama)
             const stars = document.createElement('div');
             stars.className = 'ds-rating-stars';
             stars.style.justifyContent = 'flex-start';
-            stars.style.margin = '0 0 8px 0'; // Margin bottom 8px
+            stars.style.margin = '0 0 8px 0';
 
             for (let i = 0; i < 5; i++) {
                 const star = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 star.setAttribute('width', '14');
                 star.setAttribute('height', '14');
                 star.setAttribute('viewBox', '0 0 24 24');
-                star.style.display = 'block'; // Ensure block display for SVG if needed
+                star.style.display = 'block';
 
                 if (i < review.rating) {
                     star.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>';
-                    // Use inline style to override CSS classes
                     star.style.fill = '#F5B301';
                     star.style.stroke = '#F5B301';
                 } else {
@@ -819,15 +795,12 @@ class StudioApp {
                 star.setAttribute('stroke-width', '2');
                 stars.appendChild(star);
             }
-            // Removed meta wrapper, appending stars directly later
 
-            // 3. Komentar
             const content = document.createElement('div');
             content.className = 'ds-review-content';
             content.style.marginBottom = '8px';
             content.textContent = review.text;
 
-            // 4. Tanggal (di bawah komentar)
             const date = document.createElement('div');
             date.className = 'ds-review-date';
             date.style.fontSize = '12px';
@@ -835,17 +808,45 @@ class StudioApp {
             date.textContent = review.date;
 
             info.appendChild(name);
-            info.appendChild(stars); // Changed from meta to stars
+            info.appendChild(stars);
             info.appendChild(content);
             info.appendChild(date);
 
             header.appendChild(avatar);
             header.appendChild(info);
-
             reviewCard.appendChild(header);
-            // reviewCard.appendChild(content); // Removed as it is now inside info
-
             reviewsContainer.appendChild(reviewCard);
+        });
+    }
+
+    renderFacilities() {
+        const mainContainer = document.getElementById("mainFacilities");
+        const allContainer = document.getElementById("allFacilities");
+
+        if (mainContainer) mainContainer.innerHTML = "";
+        if (allContainer) allContainer.innerHTML = "";
+
+        const facilities = this.currentStudio.facilities || [];
+
+        if (facilities.length === 0) {
+            const emptyMsg = `<p class="ds-body-text">Fasilitas belum tersedia</p>`;
+            if (mainContainer) mainContainer.innerHTML = emptyMsg;
+            if (allContainer) allContainer.innerHTML = emptyMsg;
+            return;
+        }
+
+        facilities.forEach((facility, index) => {
+            const item = document.createElement("div");
+            item.className = "facility-item";
+            item.innerHTML = `
+                <span class="facility-icon">✔</span>
+                <span class="facility-text">${facility}</span>
+            `;
+
+            if (allContainer) allContainer.appendChild(item.cloneNode(true));
+            if (mainContainer && index < 4) {
+                mainContainer.appendChild(item);
+            }
         });
     }
 
@@ -869,10 +870,6 @@ class StudioApp {
         if (viewAllReviews) viewAllReviews.addEventListener('click', () => this.viewAllReviews());
     }
 
-    updateNotificationCount() {
-
-    }
-
     goBack() {
         if (window.history.length > 1) {
             window.history.back();
@@ -889,6 +886,8 @@ class StudioApp {
         alert(`Total ${this.currentStudio.totalReviews.toLocaleString()} ulasan tersedia. Fitur ini dalam pengembangan.`);
     }
 
+    showNotifications() {
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

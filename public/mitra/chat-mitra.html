@@ -2,89 +2,114 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chat Mitra - PhotoHunt</title>
+    
     <script src="/socket.io/socket.io.js"></script> 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- STYLE INI SAMA PERSIS DENGAN CUSTOMER CHAT --- */
+        /* --- CSS BASE (SAMA DENGAN CUSTOMER) --- */
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f0f2f5; margin: 0; height: 100vh; display: flex; flex-direction: column; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; margin: 0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* HEADER ATAS (Sekarang Putih Bersih) */
-        .app-header { background: white; padding: 15px 20px; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        /* HEADER */
+        .app-header { background: white; padding: 15px 20px; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; height: 60px; flex-shrink: 0; }
         .back-link { text-decoration: none; color: #333; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; }
         .app-title { font-weight: 700; font-size: 18px; }
 
-        /* LAYOUT UTAMA */
-        .chat-container { display: flex; flex: 1; overflow: hidden; max-width: 1200px; margin: 0 auto; width: 100%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        /* CONTAINER UTAMA */
+        .chat-container { display: flex; flex: 1; overflow: hidden; max-width: 1200px; margin: 0 auto; width: 100%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; }
         
-        /* SIDEBAR (KIRI) */
-        .sidebar { width: 350px; border-right: 1px solid #eee; display: flex; flex-direction: column; background: #fff; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid #eee; font-weight: 700; font-size: 20px; }
+        /* SIDEBAR */
+        .sidebar { width: 350px; border-right: 1px solid #eee; display: flex; flex-direction: column; background: #fff; height: 100%; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #eee; font-weight: 700; font-size: 20px; flex-shrink: 0; }
         .chat-list { flex: 1; overflow-y: auto; }
         
         .chat-item { display: flex; align-items: center; padding: 15px 20px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #f9f9f9; }
         .chat-item:hover { background-color: #f5f5f5; }
-        .chat-item.active { background-color: #e6f2ff; border-left: 4px solid #007bff; }
+        /* Active State: BIRU MUDA */
+        .chat-item.active { background-color: #e6f7ff; border-left: 4px solid #007bff; }
         
-        .avatar { width: 45px; height: 45px; background: #ddd; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; font-size: 18px; flex-shrink: 0; }
+        .avatar { width: 45px; height: 45px; background: #ddd; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; font-size: 18px; flex-shrink: 0; overflow: hidden; background-size: cover; background-position: center; }
         .chat-info { flex: 1; overflow: hidden; }
         .chat-name { font-weight: 600; margin-bottom: 4px; color: #333; }
         .chat-preview { font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* AREA CHAT (KANAN) */
+        /* CHAT AREA */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #fff; position: relative; }
         
-        /* STATE 1: KOSONG */
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #888; text-align: center; padding: 20px; }
         .empty-state img { width: 120px; margin-bottom: 20px; opacity: 0.5; }
 
-        /* STATE 2: ROOM CHAT */
         .chat-room { display: none; flex-direction: column; height: 100%; } 
         
-        .room-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; background: #fff; z-index: 10; }
+        .room-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; background: #fff; z-index: 10; height: 60px; flex-shrink: 0; }
         .room-name { font-weight: 700; font-size: 16px; margin-left: 15px; }
-        .room-status { font-size: 12px; color: #28a745; margin-left: 15px; }
+        
+        #mobile-back-btn { display: none; background: none; border: none; padding: 0; margin-right: 10px; cursor: pointer; color: #333; }
 
-        .messages-box { flex: 1; overflow-y: auto; padding: 20px; background: #eef2f5; display: flex; flex-direction: column; gap: 10px; }
+        .messages-box { flex: 1; overflow-y: auto; padding: 20px; background: #eef2f5; display: flex; flex-direction: column; gap: 5px; }
         
-        /* BUBBLE CHAT */
-        .bubble { max-width: 70%; padding: 10px 15px; border-radius: 12px; font-size: 14px; line-height: 1.5; position: relative; word-wrap: break-word; }
+        /* BUBBLE CHAT (WARNA-WARNI) */
+        .bubble { max-width: 70%; padding: 10px 15px; border-radius: 12px; font-size: 14px; line-height: 1.5; position: relative; word-wrap: break-word; display: flex; flex-direction: column; }
         
-        /* Sent (Mitra Mengirim) -> Hitam */
-        .sent { align-self: flex-end; background: #000; color: #fff; border-bottom-right-radius: 2px; }
+        /* SENT (KIRIM) = BIRU */
+        .sent { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
         
-        /* Received (Customer Membalas) -> Putih */
-        .received { align-self: flex-start; background: #fff; color: #000; border: 1px solid #ddd; border-bottom-left-radius: 2px; }
+        /* RECEIVED (TERIMA) = ABU-ABU */
+        .received { align-self: flex-start; background: #f1f0f0; color: #333; border-bottom-left-radius: 2px; }
         
-        .input-box { padding: 15px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; }
-        .input-box input { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; transition: 0.2s; }
-        .input-box input:focus { border-color: #000; }
-        .send-btn { background: #000; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .send-btn:hover { background: #333; }
+        /* TIMESTAMP JAM */
+        .message-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
+        .sent .message-time { color: rgba(255,255,255,0.8); }
+        .received .message-time { color: #666; }
 
-        /* RESPONSIVE */
+        .input-box { padding: 15px; background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; flex-shrink: 0; }
+        .input-box input { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 25px; outline: none; transition: 0.2s; font-size: 16px; }
+        .input-box input:focus { border-color: #007bff; }
+        .send-btn { background: #007bff; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* MOBILE RESPONSIVE (IPHONE 14 PLUS) */
         @media (max-width: 768px) {
-            .sidebar { display: none; width: 100%; }
-            .sidebar.show { display: flex; }
-            .chat-area.active { display: flex; }
+            .app-header { padding: 10px 15px; height: 50px; }
+            .app-title { font-size: 16px; }
+            .back-link span { display: none; }
+            
+            .chat-container { margin: 0; box-shadow: none; height: 100%; }
+
+            .sidebar { width: 100%; display: flex; border: none; }
+            .chat-area { display: none; width: 100%; height: 100%; }
+
+            /* LOGIKA SPLIT VIEW */
+            .chat-container.mobile-view-active .sidebar { display: none; }
+            .chat-container.mobile-view-active .chat-area { display: flex; }
+            .chat-container.mobile-view-active .empty-state { display: none !important; }
+
+            .room-header { padding: 10px 15px; }
+            #mobile-back-btn { display: flex; align-items: center; }
+            .room-name { margin-left: 5px; font-size: 15px; }
+            
+            .input-box {
+                padding: 10px 15px;
+                padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            }
+            .bubble { max-width: 80%; }
         }
     </style>
 </head>
-<body data-page="mitra-chat">
+<body>
 
     <div class="app-header">
         <a href="mitra-dashboard.html" class="back-link">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Dashboard Mitra
+            <span>Dashboard Mitra</span>
         </a>
         <div class="app-title">Kotak Masuk</div>
-        <div style="width: 100px;"></div> 
+        <div style="width: 24px;"></div> 
     </div>
 
-    <div class="chat-container">
+    <div class="chat-container" id="chatContainerMain">
         
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">Pesan Customer</div>
@@ -94,37 +119,36 @@
         </div>
 
         <div class="chat-area">
-            
             <div class="empty-state" id="emptyState">
                 <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="Chat">
                 <h3>Halo, Mitra! 👋</h3>
-                <p>Pilih chat di sebelah kiri untuk membalas pelanggan.</p>
+                <p>Pilih chat di sebelah kiri untuk membalas.</p>
             </div>
 
             <div class="chat-room" id="chatRoom">
                 <div class="room-header">
-                    <div class="avatar" id="headerAvatar">C</div>
+                    <button id="mobile-back-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    </button>
+                    
+                    <div class="avatar" id="headerAvatar"></div>
                     <div>
                         <div class="room-name" id="headerName">Nama Customer</div>
-                        <div class="room-status">Pelanggan</div>
                     </div>
                 </div>
 
-                <div class="messages-box" id="messagesContainer">
-                    </div>
+                <div class="messages-box" id="messagesContainer"></div>
 
                 <div class="input-box">
                     <input type="text" id="msgInput" placeholder="Balas pesan..." autocomplete="off">
-                    <button class="send-btn" onclick="sendMessage()">
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script src="../js/chat-mitra.js"></script> 
-    <script src="../js/notifications.js"></script>
 </body>
 </html>

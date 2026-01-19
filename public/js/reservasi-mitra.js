@@ -18,7 +18,6 @@ async function fetchReservations() {
         if (!res.ok) throw new Error("Gagal mengambil data");
 
         const data = await res.json();
-        // Mapping field dari DB ke format yang diinginkan UI jika perlu
         allReservations = data.map(item => ({
             id: item.id,
             studio_name: item.studio_name,
@@ -32,7 +31,6 @@ async function fetchReservations() {
             proof_image: item.proof_image
         }));
 
-        // Render sesuai filter yang sedang aktif
         applyCurrentFilter();
     } catch (err) {
         console.error(err);
@@ -144,7 +142,6 @@ function getActionButtons(status, id, proofImage) {
     }
 }
 
-// --- 5. INTERACTION LOGIC (Filtering & Actions) ---
 
 function filterData(statusKey, btnElement) {
     document.querySelectorAll('.mitra-tab').forEach(b => b.classList.remove('active'));
@@ -162,7 +159,6 @@ function applyCurrentFilter() {
     }
 }
 
-// --- 6. ACTION HANDLERS ---
 
 async function updateStatus(id, newStatus) {
     let actionLabel = "";
@@ -181,7 +177,7 @@ async function updateStatus(id, newStatus) {
 
         if (res.ok) {
             alert(`Reservasi berhasil diupdate menjadi ${newStatus}`);
-            fetchReservations(); // Reload data
+            fetchReservations(); 
         } else {
             alert("Gagal memperbarui status");
         }
@@ -197,6 +193,5 @@ function viewProof(imageName) {
 }
 
 function openChat(id) {
-    // Redirect ke chat.html
     window.location.href = `chat-mitra.html?bookingId=${id}`;
 }
