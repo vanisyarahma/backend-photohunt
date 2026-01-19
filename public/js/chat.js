@@ -6,12 +6,21 @@ const socket = io();
 const API_BASE_URL = "http://localhost:3000"; 
 
 // =====================
-// 2. AUTH USER CHECK
+// 2. AUTH USER CHECK (VERSI ANTI-ERROR)
 // =====================
-const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-if (!currentUser || currentUser.role !== "customer") {
+const storedData = localStorage.getItem("currentUser");
+const rawUser = storedData ? JSON.parse(storedData) : null;
+
+// Normalisasi data (jaga-jaga kalau datanya ada di dalam properti .data)
+const currentUser = rawUser?.data || rawUser;
+const userRole = (currentUser?.role || "").toLowerCase(); // Ubah ke huruf kecil biar aman
+
+// Cek Validasi
+if (!currentUser || userRole !== "customer") {
+    // Kalau gagal, tendang ke login
+    console.warn("Auth gagal. Role:", userRole);
     window.location.href = "login.html";
-    throw new Error("Bukan customer");
+    throw new Error("Sesi habis atau bukan customer");
 }
 
 const myId = currentUser.id;
@@ -28,7 +37,6 @@ let currentPartnerLogo = params.get("partner_logo") || null;
 // =====================
 // 4. DOM ELEMENTS
 // =====================
-// [PENTING] Selector untuk Logika Mobile
 const chatContainerMain = document.getElementById("chatContainerMain");
 const mobileBackBtn = document.getElementById("mobile-back-btn");
 
@@ -74,10 +82,7 @@ function setupNavigationButtons() {
     // 2. Back dari Chat Room ke List (Mobile)
     if (mobileBackBtn) {
         mobileBackBtn.onclick = () => {
-            // Hapus class agar Sidebar muncul kembali
             if (chatContainerMain) chatContainerMain.classList.remove('mobile-view-active');
-            
-            // Hapus highlight active di list
             document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
         };
     }
@@ -92,15 +97,14 @@ function hideEmptyState() {
 }
 
 // =====================
-// 7. OPEN CHAT ROOM (FIXED MOBILE VIEW)
+// 7. OPEN CHAT ROOM
 // =====================
 async function openChat(partnerId, partnerName, partnerLogo = null) {
     currentPartnerId = partnerId;
     currentPartnerName = partnerName || "Mitra";
     currentPartnerLogo = partnerLogo;
 
-    // --- [FIX UTAMA: LOGIKA MOBILE] ---
-    // Ini baris yang bikin layar pindah ke chat room di HP!
+    // Logika Mobile View
     if (chatContainerMain) {
         chatContainerMain.classList.add('mobile-view-active');
     }
@@ -128,11 +132,10 @@ async function openChat(partnerId, partnerName, partnerLogo = null) {
 
     socket.emit("join_room", ROOM_ID);
     
-    // Highlight sidebar item & Load Pesan
     updateActiveChatInSidebar(partnerId);
     await loadMessages();
     
-    // Auto focus (hanya di desktop biar keyboard HP gak loncat)
+    // Auto focus hanya di desktop
     if(window.innerWidth > 768 && msgInput) msgInput.focus();
 }
 
@@ -157,14 +160,12 @@ async function loadSidebarHistory() {
         chats.forEach(chat => {
             const div = document.createElement("div");
             div.className = "chat-item";
-            // Set ID untuk highlight nanti
             div.setAttribute('data-partner-id', chat.partner_id);
             
             const pName = chat.partner_name || "Unknown";
             const pId = chat.partner_id;
             const pLogo = chat.partner_logo;
             
-            // Render Avatar
             let avatarHtml;
             if (pLogo) {
                 avatarHtml = `<div class="avatar" style="background-image: url('/images/studios/${pLogo}');"></div>`;
@@ -180,7 +181,6 @@ async function loadSidebarHistory() {
                 </div>
             `;
 
-            // Handle Click: Panggil openChat
             div.onclick = () => {
                 const newUrl = `customer-chat.html?partner_id=${pId}&partner_name=${encodeURIComponent(pName)}`;
                 window.history.pushState({path: newUrl}, '', newUrl);
@@ -299,7 +299,6 @@ function addBubble(text, type, timestamp) {
     const div = document.createElement("div");
     div.className = `bubble ${type}`;
     
-    // Tampilan Bubble dengan Jam
     div.innerHTML = `
         <div class="message-text">${escapeHtml(text)}</div>
         <div class="message-time">${formatTime(timestamp)}</div>
