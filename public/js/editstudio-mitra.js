@@ -11,7 +11,10 @@ document.addEventListener("DOMContentLoaded", () => {
         desc: document.getElementById("studioDescription"),
         price: document.getElementById("studioPrice"),
         
-        // --- NEW: LOGO UI ---
+        // --- PERBAIKAN DI SINI (ID disesuaikan dengan HTML kamu) ---
+        gmapsLink: document.getElementById("studioGmapsLink"), 
+
+        // Logo UI
         logoPreview: document.getElementById("editLogoPreview"),
         logoInput: document.getElementById("editLogoInput"),
         btnChangeLogo: document.getElementById("btnChangeLogo"),
@@ -46,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // --- A. LOAD DATA (TERMASUK LOGO) ---
+    // --- A. LOAD DATA ---
     async function loadStudioData() {
         try {
             const response = await fetch(`http://localhost:3000/studios/${studioId}/detail`);
@@ -61,7 +64,10 @@ document.addEventListener("DOMContentLoaded", () => {
             ui.desc.value = data.description || "";
             ui.price.value = data.price_range || "";
 
-            // --- LOGIC LOGO ---
+            if (ui.gmapsLink) {
+                ui.gmapsLink.value = data.gmaps_link || ""; 
+            }
+
             if (data.logo) {
                 ui.logoPreview.src = `http://localhost:3000/images/studios/${data.logo}?t=${new Date().getTime()}`;
             } else {
@@ -91,22 +97,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- B. LOGIKA UPDATE LOGO (LANGSUNG GANTI) ---
+    // --- B. LOGIC GANTI LOGO ---
     ui.btnChangeLogo.onclick = () => ui.logoInput.click();
-
+    
     ui.logoInput.onchange = async () => {
         const file = ui.logoInput.files[0];
         if (!file) return;
 
         const formData = new FormData();
-        formData.append("logo", file); 
+        formData.append("logo", file);
 
         try {
             const oldSrc = ui.logoPreview.src;
             ui.logoPreview.style.opacity = "0.5";
-            ui.btnChangeLogo.disabled = true;
-            ui.btnChangeLogo.style.cursor = "not-allowed";
-
+            
             const res = await fetch(`http://localhost:3000/studios/${studioId}/logo`, {
                 method: "POST",
                 body: formData
@@ -117,20 +121,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 ui.logoPreview.src = `http://localhost:3000/images/studios/${json.logo}?t=${new Date().getTime()}`;
                 alert("Logo berhasil diperbarui!");
             } else {
-                alert("Gagal: " + json.message);
-                ui.logoPreview.src = oldSrc; 
+                alert(json.message);
+                ui.logoPreview.src = oldSrc;
             }
         } catch (e) {
-            alert("Error upload logo: " + e.message);
+            alert("Gagal upload logo: " + e.message);
         } finally {
             ui.logoPreview.style.opacity = "1";
-            ui.btnChangeLogo.disabled = false;
-            ui.btnChangeLogo.style.cursor = "pointer";
-            ui.logoInput.value = ""; 
+            ui.logoInput.value = "";
         }
     };
 
-    // --- C. LOGIKA JADWAL (SCHEDULE) ---
     function renderScheduleTable(existingSchedules) {
         ui.scheduleList.innerHTML = "";
 
@@ -176,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- D. LOGIKA GALLERY ---
     function renderGallery() {
         ui.galleryContainer.innerHTML = "";
         const count = currentImages.length;
@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const div = document.createElement("div");
             div.className = "gallery-item";
             div.innerHTML = `
-                <img src="/images/studios/${img.image}" alt="Foto">
+                <img src="http://localhost:3000/images/studios/${img.image}" alt="Foto">
                 <button type="button" class="btn-delete-img" title="Hapus">✕</button>
             `;
             div.querySelector(".btn-delete-img").onclick = () => deleteImage(img.id);
@@ -210,11 +210,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (result.success) {
                 currentImages = currentImages.filter(img => img.id !== id);
                 renderGallery();
-            } else alert("Gagal hapus.");
-        } catch (e) { alert(e.message); }
+            } else {
+                alert("Gagal hapus foto.");
+            }
+        } catch (e) { 
+            alert(e.message); 
+        }
     }
 
     ui.btnSelectPhoto.onclick = () => ui.newPhotoInput.click();
+    
     ui.newPhotoInput.onchange = async () => {
         const files = ui.newPhotoInput.files;
         if (files.length === 0) return;
@@ -224,24 +229,35 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const formData = new FormData();
-        for (let i = 0; i < files.length; i++) formData.append("new_images", files[i]);
+        for (let i = 0; i < files.length; i++) {
+            formData.append("new_images", files[i]);
+        }
 
         try {
             ui.btnSelectPhoto.innerText = "Uploading...";
             ui.btnSelectPhoto.disabled = true;
-            const res = await fetch(`http://localhost:3000/studios/${studioId}/images`, { method: 'POST', body: formData });
+            
+            const res = await fetch(`http://localhost:3000/studios/${studioId}/images`, { 
+                method: 'POST', 
+                body: formData 
+            });
             const json = await res.json();
-            if(json.success) loadStudioData(); 
-            else alert(json.message);
-        } catch(e) { alert(e.message); }
-        finally {
+            
+            if(json.success) {
+                loadStudioData(); 
+            } else {
+                alert(json.message);
+            }
+        } catch(e) { 
+            alert(e.message); 
+        } finally {
             ui.btnSelectPhoto.innerText = "+ Tambah Foto";
             ui.btnSelectPhoto.disabled = false;
             ui.newPhotoInput.value = "";
         }
     };
 
-    // --- E. LOGIKA FASILITAS ---
+    // --- F. LOGIC FASILITAS ---
     function addFacilityRow(value = "") {
         const div = document.createElement("div");
         div.className = "mitra-facility-item";
@@ -261,24 +277,25 @@ document.addEventListener("DOMContentLoaded", () => {
             ui.newFacilityInput.value = "";
         }
     };
+    
     ui.newFacilityInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") { e.preventDefault(); ui.addFacilityBtn.click(); }
+        if (e.key === "Enter") { 
+            e.preventDefault(); 
+            ui.addFacilityBtn.click(); 
+        }
     });
 
-    // --- F. SIMPAN SEMUA (TEKS & JADWAL) ---
-   ui.saveBtn.onclick = async () => {
+    ui.saveBtn.onclick = async () => {
         if (!confirm("Simpan semua perubahan?")) return;
 
         const payload = {
             name: ui.name.value,
             description: ui.desc.value,
             price_range: ui.price.value,
-            gmaps_link: ui.gmapsLink.value,
-            
-            facilities: [],
+            gmaps_link: ui.gmapsLink.value, 
             schedules: []
         };
-
+        
         ui.facilityList.querySelectorAll("input").forEach(inp => {
             if(inp.value.trim()) payload.facilities.push(inp.value.trim());
         });
@@ -311,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (json.success) {
                 alert("Data berhasil disimpan!");
-                window.location.href = "kelola-studio.html";
+                window.location.href = "kelola-studio.html"; // Balik ke halaman kelola
             } else {
                 throw new Error(json.message);
             }

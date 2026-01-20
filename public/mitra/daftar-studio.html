@@ -14,7 +14,7 @@
       body {
         margin: 0;
         padding: 0;
-        background: #f3f4f6; 
+        background: #f3f4f6;
       }
 
       .daftarkan-mitra {
@@ -24,7 +24,7 @@
         --bg-light: #f9fafb;
         --danger: #ef4444;
         --radius: 10px;
-        
+
         font-family: "Inter", "Segoe UI", sans-serif;
         color: #1f2937;
         line-height: 1.5;
@@ -95,7 +95,7 @@
         background: #fff;
         transition: all 0.3s;
         z-index: 2;
-        font-size: 14px; /* Sedikit dirapikan */
+        font-size: 14px;
       }
 
       .dm-step-circle.active {
@@ -154,7 +154,7 @@
         border: 1px solid var(--border);
         border-radius: var(--radius);
         font-size: 15px;
-        font-family: inherit; /* Penting agar input mewarisi font Inter */
+        font-family: inherit;
         transition: border-color 0.2s;
         background: #fff;
       }
@@ -476,30 +476,29 @@
             </select>
           </div>
 
-          <div class="dm-grid-row">
-            <div class="dm-field-group">
-              <label for="dm_lat" class="dm-label">Latitude</label>
-              <input
-                type="number"
-                step="any"
-                id="dm_lat"
-                name="latitude"
-                class="dm-input"
-                placeholder="-6.2349"
-              />
-            </div>
-            <div class="dm-field-group">
-              <label for="dm_long" class="dm-label">Longitude</label>
-              <input
-                type="number"
-                step="any"
-                id="dm_long"
-                name="longitude"
-                class="dm-input"
-                placeholder="106.9896"
-              />
-            </div>
+          <div class="dm-field-group">
+            <label for="dm_gmaps" class="dm-label">Link Google Maps *</label>
+            <input
+              type="url"
+              id="dm_gmaps"
+              name="gmaps_link"
+              class="dm-input"
+              placeholder="Paste link Google Maps studio di sini..."
+              required
+            />
+            <small
+              style="
+                color: #6b7280;
+                font-size: 12px;
+                margin-top: 4px;
+                display: block;
+              "
+            >
+              Buka Google Maps, cari lokasi studio Anda, klik Share, lalu Copy
+              Link.
+            </small>
           </div>
+
           <div class="dm-footer">
             <span></span>
             <button
@@ -515,20 +514,57 @@
         <section class="dm-step">
           <h2 class="dm-section-title">Fasilitas & Media</h2>
           <div class="dm-field-group">
-            <label class="dm-label">Logo Studio (Opsional tapi Disarankan)</label>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #d1d5db; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #f9fafb; flex-shrink: 0;">
-                    <img id="logo-preview-register" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                    <span id="logo-placeholder-text" style="font-size: 10px; color: #9ca3af; text-align: center;">No Logo</span>
-                </div>
-                
-                <div style="flex: 1;">
-                    <input type="file" name="logo" class="dm-input" accept="image/*" onchange="previewLogoRegister(this)">
-                    <small style="color: #6b7280; font-size: 12px; margin-top: 4px;">Format: JPG/PNG. Disarankan rasio 1:1 (Kotak).</small>
-                </div>
+            <label class="dm-label"
+              >Logo Studio (Opsional tapi Disarankan)</label
+            >
+            <div style="display: flex; align-items: center; gap: 15px">
+              <div
+                style="
+                  width: 80px;
+                  height: 80px;
+                  border-radius: 50%;
+                  border: 2px dashed #d1d5db;
+                  overflow: hidden;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  background: #f9fafb;
+                  flex-shrink: 0;
+                "
+              >
+                <img
+                  id="logo-preview-register"
+                  src=""
+                  style="
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: none;
+                  "
+                />
+                <span
+                  id="logo-placeholder-text"
+                  style="font-size: 10px; color: #9ca3af; text-align: center"
+                  >No Logo</span
+                >
+              </div>
+
+              <div style="flex: 1">
+                <input
+                  type="file"
+                  name="logo"
+                  class="dm-input"
+                  accept="image/*"
+                  onchange="previewLogoRegister(this)"
+                />
+                <small
+                  style="color: #6b7280; font-size: 12px; margin-top: 4px"
+                  >Format: JPG/PNG. Disarankan rasio 1:1 (Kotak).</small
+                >
+              </div>
             </div>
           </div>
-          
+
           <div class="dm-field-group">
             <label class="dm-label">Fasilitas Studio (Minimal 1) *</label>
             <div id="facility-container">
@@ -792,37 +828,7 @@
             </div>
           </div>
 
-          <div class="dm-field-group">
-            <label class="dm-label">Mode Slot</label>
-            <div class="dm-radio-group">
-              <input
-                type="radio"
-                id="mode_fix"
-                name="slot_mode"
-                value="fixed"
-                checked
-              />
-              <label for="mode_fix" class="dm-radio-btn">
-                Strict (Tepat Waktu)<br />
-                <span style="font-size: 12px; font-weight: normal"
-                  >10:00, 10:30, 11:00...</span
-                >
-              </label>
-
-              <input
-                type="radio"
-                id="mode_flex"
-                name="slot_mode"
-                value="flexible"
-              />
-              <label for="mode_flex" class="dm-radio-btn">
-                Flexible (Tiap Jam)<br />
-                <span style="font-size: 12px; font-weight: normal"
-                  >Customer bebas pilih jam awal</span
-                >
-              </label>
-            </div>
-          </div>
+          <input type="hidden" name="slot_mode" value="fixed" />
 
           <div class="dm-footer">
             <button type="button" class="dm-btn-back" onclick="prevStep()">
@@ -887,7 +893,6 @@
       </form>
     </div>
 
-    <script src="http://localhost:3000/js/daftar-studio.js"></script>
-
+    <script src="../js/daftar-studio.js" defer></script>
   </body>
 </html>

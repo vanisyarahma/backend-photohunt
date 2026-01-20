@@ -533,6 +533,7 @@ class StudioApp {
         return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
     }
 
+    // ==================== RENDER STUDIO DATA ====================
     renderStudioData() {
         const setText = (id, text) => {
             const el = document.getElementById(id);
@@ -564,46 +565,175 @@ class StudioApp {
         setText('sidebarReviewCount', totalReviews > 0 ? totalReviews.toLocaleString() + ' ulasan' : 'Belum ada ulasan');
         setText('sidebarLocation', studio.location || studio.city);
 
-        const hours = studio.hours || {};
-        setText('weekdayHours', hours.weekdays || '-');
-        setText('weekendHours', hours.weekends || '-');
+        // === TAMBAHKAN DI SINI ===
+        this.renderDailySchedule();  // Render tabel jadwal
+        this.updateSidebarHours();   // Update jam di sidebar
+    }
+
+    // ==================== TAMBAHKAN 3 METHOD INI ====================
+    // Method 1: Render tabel jadwal per hari
+    renderDailySchedule() {
+        const scheduleTable = document.getElementById('dailyScheduleTable');
+        if (!scheduleTable) return;
+
+        const schedules = this.currentStudio?.schedules || [];
+        const daysOrder = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
         
-        if (hours.isOpen) {
-            setText('sidebarHours', 'Buka Sekarang');
-        } else {
-            const now = new Date();
-            const currentTime = now.getHours() * 60 + now.getMinutes();
-            const schedule = this.currentStudio?.schedules?.find(s => 
-                s.day.toLowerCase() === 'senin'
+        scheduleTable.innerHTML = '';
+
+        const today = new Date();
+        const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+        const todayName = days[today.getDay()];
+
+        daysOrder.forEach(dayKey => {
+            const schedule = schedules.find(s => 
+                s.day && s.day.toLowerCase() === dayKey
             );
             
-            if (schedule && (!schedule.open_time || !schedule.close_time)) {
-                setText('sidebarHours', 'Libur Hari Ini');
-            } else if (currentTime < 480) {
-                setText('sidebarHours', 'Tutup (Buka nanti)');
-            } else if (currentTime > 1020) {
-                setText('sidebarHours', 'Tutup (Buka besok)');
-            } else {
-                setText('sidebarHours', 'Sedang Tutup');
+            const row = document.createElement('tr');
+            
+            // Highlight hari ini
+            if (dayKey === todayName) {
+                row.classList.add('ds-schedule-today');
             }
-        }
+
+            const dayCell = document.createElement('td');
+            dayCell.textContent = dayKey.charAt(0).toUpperCase() + dayKey.slice(1);
+
+            const timeCell = document.createElement('td');
+            
+            if (schedule && schedule.open_time && schedule.close_time) {
+                const rawOpen = schedule.open_time;
+                const rawClose = schedule.close_time;
+                
+                // Logika sama dengan preview-studio-mitra
+                const isLibur = !rawOpen || !rawClose || 
+                               rawOpen === '00:00:00' || rawClose === '00:00:00' ||
+                               rawOpen === '00:00' || rawClose === '00:00';
+                
+                if (isLibur) {
+                    const closedBadge = document.createElement('span');
+                    closedBadge.className = 'ds-schedule-closed';
+                    closedBadge.textContent = 'LIBUR';
+                    timeCell.appendChild(closedBadge);
+                } else {
+                    const openTime = rawOpen.substring(0, 5);
+                    const closeTime = rawClose.substring(0, 5);
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'ds-schedule-time';
+                    timeSpan.textContent = `${openTime} - ${closeTime}`;
+                    timeCell.appendChild(timeSpan);
+                }
+            } else {
+                const closedBadge = document.createElement('span');
+                closedBadge.className = 'ds-schedule-closed';
+                closedBadge.textContent = 'LIBUR';
+                timeCell.appendChild(closedBadge);
+            }
+
+            row.appendChild(dayCell);
+            row.appendChild(timeCell);
+            scheduleTable.appendChild(row);
+        });
+
+        this.updateStudioStatus();
+    }
+
+    // Method 2: Update status buka/tutup
+    updateStudioStatus() {
+        const schedules = this.currentStudio?.schedules || [];
+        const today = new Date();
+        const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+        const todayName = days[today.getDay()];
+        
+        const todaySchedule = schedules.find(s => 
+            s.day && s.day.toLowerCase() === todayName
+        );
 
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
 
-        if (statusDot && statusText) {
-            if (hours.isOpen) {
-                statusDot.style.background = '#10B981';
-                statusText.textContent = 'Buka Sekarang';
-                statusText.style.color = '#10B981';
+        if (!statusDot || !statusText) return;
+
+        if (!todaySchedule || !todaySchedule.open_time || !todaySchedule.close_time ||
+            todaySchedule.open_time === '00:00:00' || todaySchedule.close_time === '00:00:00') {
+            statusDot.style.background = 'var(--ds-error)';
+            statusText.textContent = 'Libur Hari Ini';
+            statusText.style.color = 'var(--ds-error)';
+            return;
+        }
+
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        const openParts = todaySchedule.open_time.split(':');
+        const closeParts = todaySchedule.close_time.split(':');
+        
+        const openMinutes = parseInt(openParts[0]) * 60 + parseInt(openParts[1]);
+        const closeMinutes = parseInt(closeParts[0]) * 60 + parseInt(closeParts[1]);
+
+        if (currentMinutes >= openMinutes && currentMinutes < closeMinutes) {
+            statusDot.style.background = 'var(--ds-success)';
+            statusText.textContent = 'Buka Sekarang';
+            statusText.style.color = 'var(--ds-success)';
+        } else {
+            statusDot.style.background = 'var(--ds-error)';
+            
+            if (currentMinutes < openMinutes) {
+                const hoursToOpen = Math.floor((openMinutes - currentMinutes) / 60);
+                const minutesToOpen = (openMinutes - currentMinutes) % 60;
+                
+                if (hoursToOpen > 0) {
+                    statusText.textContent = `Buka dalam ${hoursToOpen} jam ${minutesToOpen} menit`;
+                } else {
+                    statusText.textContent = `Buka dalam ${minutesToOpen} menit`;
+                }
             } else {
-                statusDot.style.background = '#EF4444';
-                statusText.textContent = 'Sedang Tutup';
-                statusText.style.color = '#EF4444';
+                statusText.textContent = 'Tutup - Buka Besok';
             }
+            statusText.style.color = 'var(--ds-error)';
         }
     }
 
+    // Method 3: Update sidebar hours
+    updateSidebarHours() {
+        const schedules = this.currentStudio?.schedules || [];
+        const today = new Date();
+        const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+        const todayName = days[today.getDay()];
+        
+        const todaySchedule = schedules.find(s => 
+            s.day && s.day.toLowerCase() === todayName
+        );
+
+        const sidebarHours = document.getElementById('sidebarHours');
+        if (!sidebarHours) return;
+
+        if (!todaySchedule || !todaySchedule.open_time || !todaySchedule.close_time ||
+            todaySchedule.open_time === '00:00:00' || todaySchedule.close_time === '00:00:00') {
+            sidebarHours.textContent = 'Libur Hari Ini';
+            return;
+        }
+
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        const openParts = todaySchedule.open_time.split(':');
+        const closeParts = todaySchedule.close_time.split(':');
+        
+        const openMinutes = parseInt(openParts[0]) * 60 + parseInt(openParts[1]);
+        const closeMinutes = parseInt(closeParts[0]) * 60 + parseInt(closeParts[1]);
+
+        if (currentMinutes >= openMinutes && currentMinutes < closeMinutes) {
+            sidebarHours.textContent = 'Buka Sekarang';
+        } else {
+            const openTime = todaySchedule.open_time.substring(0, 5);
+            const closeTime = todaySchedule.close_time.substring(0, 5);
+            sidebarHours.textContent = `${openTime} - ${closeTime}`;
+        }
+    }
+
+    // ==================== METHOD-METHOD LAINNYA ====================
     renderPackages() {
         const packagesContainer = document.getElementById('packagesContainer');
         if (!packagesContainer) return;
@@ -887,8 +1017,13 @@ class StudioApp {
     }
 
     showNotifications() {
+        // Notifications logic
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.studioApp = new StudioApp();
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     window.studioApp = new StudioApp();

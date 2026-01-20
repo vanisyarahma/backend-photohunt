@@ -6,8 +6,7 @@ if (!currentUser || currentUser.role !== "mitra") {
   throw new Error("INVALID MITRA SESSION");
 }
 
-const currentMitraId = currentUser.id; 
-
+const currentMitraId = currentUser.id;
 
 const STORAGE_KEY = `mitra_form_final_${currentMitraId}`;
 
@@ -228,10 +227,9 @@ async function handleFinalSubmit(e) {
   const form = document.getElementById("form-daftar-mitra");
   const formData = new FormData(form);
   formData.append("mitra_id", currentMitraId);
-selectedStudioImages.forEach(file => {
-  formData.append("studio_images[]", file);
-});
-
+  selectedStudioImages.forEach((file) => {
+    formData.append("studio_images[]", file);
+  });
 
   // DEBUG WAJIB (LIAT DI CONSOLE)
   console.log("=== FORM DATA ===");
@@ -246,7 +244,7 @@ selectedStudioImages.forEach(file => {
   try {
     const res = await fetch("http://localhost:3000/studios", {
       method: "POST",
-      body: formData
+      body: formData,
     });
 
     if (!res.ok) throw new Error("Gagal menyimpan studio");
@@ -261,20 +259,20 @@ selectedStudioImages.forEach(file => {
 
 // --- FUNGSI BARU: PREVIEW LOGO ---
 function previewLogoRegister(input) {
-  const preview = document.getElementById('logo-preview-register');
-  const placeholder = document.getElementById('logo-placeholder-text');
-  
+  const preview = document.getElementById("logo-preview-register");
+  const placeholder = document.getElementById("logo-placeholder-text");
+
   if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-          placeholder.style.display = 'none';
-      }
-      reader.readAsDataURL(input.files[0]);
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      preview.src = e.target.result;
+      preview.style.display = "block";
+      placeholder.style.display = "none";
+    };
+    reader.readAsDataURL(input.files[0]);
   } else {
-      preview.src = '';
-      preview.style.display = 'none';
-      placeholder.style.display = 'block';
+    preview.src = "";
+    preview.style.display = "none";
+    placeholder.style.display = "block";
   }
 }
