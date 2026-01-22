@@ -9,12 +9,14 @@ class Utils {
 
     static formatDate(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
+        return date.toLocaleString('id-ID', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
-        });
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).replace('.', ':');
     }
 
     static getIconSvg(iconName) {
@@ -204,7 +206,7 @@ class BookingManager {
         this.setupBookingEvents();
         this.initializeDatePicker();
     }
-    
+
     setupBookingEvents() {
         const reserveBtn = document.getElementById('reserveBtn');
         if (reserveBtn) reserveBtn.addEventListener('click', () => this.startReservation());
@@ -252,11 +254,14 @@ class BookingManager {
 
         const partnerId = this.app.currentStudio.mitra_id || this.app.currentStudio.id;
         const partnerName = encodeURIComponent(this.app.currentStudio.name);
-        const partnerPhoto = encodeURIComponent(this.app.currentStudio.gallery?.[0] || '');
 
-        window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_photo=${partnerPhoto}`;
+        // Logika Logo: Utamakan logo dari tabel studio, fallback ke gallery[0]
+        const logo = this.app.currentStudio.logo || this.app.currentStudio.image || this.app.currentStudio.gallery?.[0] || '';
+        const partnerLogo = encodeURIComponent(logo);
+
+        window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_logo=${partnerLogo}`;
     }
-    
+
     initializeDatePicker() {
         const today = new Date();
         const formattedToday = today.toISOString().split('T')[0];
@@ -454,10 +459,14 @@ class StudioApp {
     async loadStudioData() {
         try {
             const res = await fetch(
-                `http://localhost:3000/studios/${this.currentStudioId}/detail`
+                `/studios/${this.currentStudioId}/detail`
             );
 
-            if (!res.ok) throw new Error("Studio tidak ditemukan");
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error("Server Error Response:", errText);
+                throw new Error(`Error ${res.status}: ${errText}`);
+            }
 
             const data = await res.json();
             const schedMap = {};
@@ -500,7 +509,7 @@ class StudioApp {
 
         } catch (err) {
             console.error("❌ Detail Studio Error:", err);
-            Utils.showError("Gagal memuat data studio");
+            Utils.showError(`Gagal memuat data studio: ${err.message}`);
         }
     }
 
@@ -517,7 +526,7 @@ class StudioApp {
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         const openParts = schedule.open_time.split(':');
         const closeParts = schedule.close_time.split(':');
-        
+
         if (openParts.length < 2 || closeParts.length < 2) {
             return false;
         }
@@ -566,8 +575,8 @@ class StudioApp {
         setText('sidebarLocation', studio.location || studio.city);
 
         // === TAMBAHKAN DI SINI ===
-        this.renderDailySchedule();  // Render tabel jadwal
-        this.updateSidebarHours();   // Update jam di sidebar
+        this.renderDailySchedule();
+        this.updateSidebarHours();
     }
 
     // ==================== TAMBAHKAN 3 METHOD INI ====================
@@ -578,7 +587,7 @@ class StudioApp {
 
         const schedules = this.currentStudio?.schedules || [];
         const daysOrder = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
-        
+
         scheduleTable.innerHTML = '';
 
         const today = new Date();
@@ -586,12 +595,12 @@ class StudioApp {
         const todayName = days[today.getDay()];
 
         daysOrder.forEach(dayKey => {
-            const schedule = schedules.find(s => 
+            const schedule = schedules.find(s =>
                 s.day && s.day.toLowerCase() === dayKey
             );
-            
+
             const row = document.createElement('tr');
-            
+
             // Highlight hari ini
             if (dayKey === todayName) {
                 row.classList.add('ds-schedule-today');
@@ -601,16 +610,16 @@ class StudioApp {
             dayCell.textContent = dayKey.charAt(0).toUpperCase() + dayKey.slice(1);
 
             const timeCell = document.createElement('td');
-            
+
             if (schedule && schedule.open_time && schedule.close_time) {
                 const rawOpen = schedule.open_time;
                 const rawClose = schedule.close_time;
-                
+
                 // Logika sama dengan preview-studio-mitra
-                const isLibur = !rawOpen || !rawClose || 
-                               rawOpen === '00:00:00' || rawClose === '00:00:00' ||
-                               rawOpen === '00:00' || rawClose === '00:00';
-                
+                const isLibur = !rawOpen || !rawClose ||
+                    rawOpen === '00:00:00' || rawClose === '00:00:00' ||
+                    rawOpen === '00:00' || rawClose === '00:00';
+
                 if (isLibur) {
                     const closedBadge = document.createElement('span');
                     closedBadge.className = 'ds-schedule-closed';
@@ -645,8 +654,8 @@ class StudioApp {
         const today = new Date();
         const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
         const todayName = days[today.getDay()];
-        
-        const todaySchedule = schedules.find(s => 
+
+        const todaySchedule = schedules.find(s =>
             s.day && s.day.toLowerCase() === todayName
         );
 
@@ -665,10 +674,10 @@ class StudioApp {
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        
+
         const openParts = todaySchedule.open_time.split(':');
         const closeParts = todaySchedule.close_time.split(':');
-        
+
         const openMinutes = parseInt(openParts[0]) * 60 + parseInt(openParts[1]);
         const closeMinutes = parseInt(closeParts[0]) * 60 + parseInt(closeParts[1]);
 
@@ -678,11 +687,11 @@ class StudioApp {
             statusText.style.color = 'var(--ds-success)';
         } else {
             statusDot.style.background = 'var(--ds-error)';
-            
+
             if (currentMinutes < openMinutes) {
                 const hoursToOpen = Math.floor((openMinutes - currentMinutes) / 60);
                 const minutesToOpen = (openMinutes - currentMinutes) % 60;
-                
+
                 if (hoursToOpen > 0) {
                     statusText.textContent = `Buka dalam ${hoursToOpen} jam ${minutesToOpen} menit`;
                 } else {
@@ -701,8 +710,8 @@ class StudioApp {
         const today = new Date();
         const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
         const todayName = days[today.getDay()];
-        
-        const todaySchedule = schedules.find(s => 
+
+        const todaySchedule = schedules.find(s =>
             s.day && s.day.toLowerCase() === todayName
         );
 
@@ -717,10 +726,10 @@ class StudioApp {
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        
+
         const openParts = todaySchedule.open_time.split(':');
         const closeParts = todaySchedule.close_time.split(':');
-        
+
         const openMinutes = parseInt(openParts[0]) * 60 + parseInt(openParts[1]);
         const closeMinutes = parseInt(closeParts[0]) * 60 + parseInt(closeParts[1]);
 
@@ -793,7 +802,8 @@ class StudioApp {
         if (!this.currentStudio.reviews) return;
 
         const overallRating = document.getElementById('overallRating');
-        if (overallRating) overallRating.textContent = this.currentStudio.rating.toFixed(1);
+        const validRating = this.currentStudio.rating || 0;
+        if (overallRating) overallRating.textContent = Number(validRating).toFixed(1);
 
         const totalReviews = document.getElementById('totalReviews');
         if (totalReviews) totalReviews.textContent = this.currentStudio.totalReviews.toLocaleString() + ' ulasan';
@@ -808,7 +818,7 @@ class StudioApp {
         if (!starsContainer) return;
         starsContainer.innerHTML = '';
 
-        const rating = this.currentStudio.rating;
+        const rating = this.currentStudio.rating || 0;
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 >= 0.5;
 
@@ -929,13 +939,13 @@ class StudioApp {
             const content = document.createElement('div');
             content.className = 'ds-review-content';
             content.style.marginBottom = '8px';
-            content.textContent = review.text;
+            content.textContent = review.comment || '';
 
             const date = document.createElement('div');
             date.className = 'ds-review-date';
             date.style.fontSize = '12px';
             date.style.color = '#6b7280';
-            date.textContent = review.date;
+            date.textContent = Utils.formatDate(review.date);
 
             info.appendChild(name);
             info.appendChild(stars);
@@ -1001,14 +1011,15 @@ class StudioApp {
     }
 
     goBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            window.location.href = 'customer-app.html';
-        }
+        window.location.href = 'customer-app.html';
     }
 
     goToProfile() {
+        if (!this.currentUser) {
+            alert("Silakan login untuk melihat profil.");
+            window.location.href = "login.html";
+            return;
+        }
         window.location.href = `kelolaprofile.html?id=${this.currentUser.id}`;
     }
 

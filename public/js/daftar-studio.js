@@ -179,6 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("form-daftar-mitra")
     .addEventListener("change", saveForm);
+
+  togglePaymentMethods(); // Inisialisasi status pembayaran
 });
 
 function addFacility() {
@@ -188,6 +190,56 @@ function addFacility() {
   div.innerHTML =
     '<input class="dm-input" name="facilities[]" placeholder="Fasilitas lainnya..." required><button type="button" class="dm-action-btn remove" onclick="this.parentElement.remove(); saveForm()">×</button>';
   container.appendChild(div);
+}
+
+// --- LOGIC TOGGLE PEMBAYARAN ---
+function togglePaymentMethods() {
+  const isBankChecked = document.getElementById("chk_bank").checked;
+  const isQrisChecked = document.getElementById("chk_qris").checked;
+
+  const sectionBank = document.getElementById("section-bank");
+  const sectionQris = document.getElementById("section-qris");
+
+  // Show/Hide Section
+  sectionBank.style.display = isBankChecked ? "block" : "none";
+  sectionQris.style.display = isQrisChecked ? "block" : "none";
+
+  // Manage "Required" Attribute (Agar validasi browser jalan otomatis)
+  const bankInputs = document.querySelectorAll(".bank-req");
+  bankInputs.forEach(input => {
+    input.required = isBankChecked;
+    if (!isBankChecked) input.value = ""; // Reset nilai kalau di-uncheck
+  });
+
+  const qrisInput = document.querySelector(".qris-req");
+  if (qrisInput) {
+    qrisInput.required = isQrisChecked;
+    if (!isQrisChecked) removeQris(); // Reset QRIS kalau di-uncheck
+  }
+}
+
+function handleQrisUpload(input) {
+  const previewContainer = document.getElementById('qris-preview-container');
+  const removeBtn = document.getElementById('btn-remove-qris');
+
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      previewContainer.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
+      removeBtn.style.display = 'block';
+    }
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeQris() {
+  const input = document.getElementById('qris-input');
+  const previewContainer = document.getElementById('qris-preview-container');
+  const removeBtn = document.getElementById('btn-remove-qris');
+
+  if (input) input.value = '';
+  if (previewContainer) previewContainer.innerHTML = '<div class="qris-placeholder">Preview QRIS</div>';
+  if (removeBtn) removeBtn.style.display = 'none';
 }
 
 function copyMonday() {
@@ -217,12 +269,37 @@ function addPackage() {
   const div = document.createElement("div");
   div.className = "dm-package-card";
   div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:10px"><strong>Paket #${index + 1
-    }</strong><button type="button" style="color:red; background:none; border:none; cursor:pointer" onclick="this.closest('.dm-package-card').remove()">Hapus</button></div><div class="dm-field-group"><label class="dm-label">Nama Paket *</label><input class="dm-input" name="packages[${index}][name]" required></div><div class="dm-field-group"><label class="dm-label">Harga Paket (Rp) *</label><input type="number" class="dm-input" name="packages[${index}][price]" required></div><div class="dm-field-group"><label class="dm-label">Deskripsi Paket</label><textarea class="dm-textarea" style="min-height:60px" name="packages[${index}][description]"></textarea></div>`;
+    }</strong><button type="button" style="color:red; background:none; border:none; cursor:pointer" onclick="this.closest('.dm-package-card').remove()">Hapus</button></div>
+    
+    <div class="dm-field-group"><label class="dm-label">Nama Paket *</label><input class="dm-input" name="packages[${index}][name]" required></div>
+    <div class="dm-field-group"><label class="dm-label">Harga Paket (Rp) *</label><input type="number" class="dm-input" name="packages[${index}][price]" required></div>
+    <div class="dm-field-group"><label class="dm-label">Deskripsi Paket</label><textarea class="dm-textarea" style="min-height:60px" name="packages[${index}][description]"></textarea></div>
+    
+    <div class="dm-grid-row">
+        <div class="dm-field-group">
+            <label class="dm-label">Durasi (Menit) *</label>
+            <input type="number" class="dm-input" name="packages[${index}][duration]" placeholder="30" required>
+        </div>
+        <div class="dm-field-group">
+            <label class="dm-label">Jeda (Menit)</label>
+            <input type="number" class="dm-input" name="packages[${index}][break]" placeholder="0" value="0">
+        </div>
+    </div>`;
   container.appendChild(div);
 }
 
 async function handleFinalSubmit(e) {
   e.preventDefault();
+
+  // --- VALIDASI TAMBAHAN STEP 6 (Payment) ---
+  const isBankChecked = document.getElementById("chk_bank").checked;
+  const isQrisChecked = document.getElementById("chk_qris").checked;
+
+  if (!isBankChecked && !isQrisChecked) {
+    alert("Mohon pilih minimal satu metode pembayaran (Bank atau QRIS).");
+    return; // Stop proses
+  }
+  // --------------------------------
 
   const form = document.getElementById("form-daftar-mitra");
   const formData = new FormData(form);
@@ -237,12 +314,20 @@ async function handleFinalSubmit(e) {
     console.log(pair[0], pair[1]);
   }
 
+  // DEBUG CHECK: Pastikan file QRIS terpilih jika checkbox aktif
+  if (isQrisChecked) {
+    const qrisInput = document.getElementById('qris-input');
+    if (qrisInput && qrisInput.files.length === 0) {
+      console.warn("User memilih QRIS tapi file belum ter-attach di input (mungkin hanya di preview?)");
+    }
+  }
+
   const submitBtn = document.querySelector('.dm-btn-next[type="submit"]');
   submitBtn.innerText = "Mengirim...";
   submitBtn.disabled = true;
 
   try {
-    const res = await fetch("http://localhost:3000/studios", {
+    const res = await fetch("/studios", {
       method: "POST",
       body: formData,
     });

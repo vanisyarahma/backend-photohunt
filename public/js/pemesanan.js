@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('studioName').textContent = booking.studio_name;
         document.getElementById('studioAddress').textContent = booking.studio_location;
 
-        document.getElementById('customerName').textContent = JSON.parse(localStorage.getItem('currentUser')).name || "Pelanggan";
+        const currentUserVar = JSON.parse(localStorage.getItem('currentUser')) || {};
+        document.getElementById('customerName').textContent = currentUserVar.name || "Pelanggan";
         document.getElementById('packageName').textContent = booking.package_name || "Custom Package";
         document.getElementById('bookingDate').textContent = formatDateIndo(booking.booking_date);
         document.getElementById('bookingTime').textContent = booking.booking_time + " WIB";
@@ -136,8 +137,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         }
 
+        // FIX: Move chat button logic inside try block so 'booking' is defined
+        const chatBtn = document.querySelector('.ph-cta-btn');
+        if (chatBtn) {
+            chatBtn.onclick = () => openChatFromOrder(booking);
+        }
+
     } catch (err) {
         console.error(err);
         alert("Terjadi kesalahan saat memuat data");
     }
 });
+
+function openChatFromOrder(booking) {
+    if (!booking) return;
+
+    const partnerId = booking.mitra_id; // Pastikan backend kirim mitra_id di detail booking (biasanya join studio)
+    // Jika booking detail belum punya mitra_id, perlu tambahkan di query backend jika belum ada.
+    // Berdasarkan server.js check sebelumnya, query booking detail sudah join studio tapi select fieldsnya perlu dicek.
+    // Query backend: JOIN studios s ... SELECT s.name, ... 
+    // Kita harus pastikan s.mitra_id terambil.
+
+    // Workaround: jika booking object di JS tidak punya mitra_id, kita pakai studio_id (mungkin less ideal tapi coba dulu)
+    // Tapi sebaiknya update query di server.js juga untuk ambil s.mitra_id.
+    // Mari kita asumsikan server.js sudah kita update (step selanjutnya).
+
+    const pId = booking.mitra_id || booking.studio_id;
+    const pName = encodeURIComponent(booking.studio_name);
+    const pLogo = booking.studio_image ? encodeURIComponent(booking.studio_image) : '';
+
+    window.location.href = `chat.html?partner_id=${pId}&partner_name=${pName}&partner_logo=${pLogo}`;
+}

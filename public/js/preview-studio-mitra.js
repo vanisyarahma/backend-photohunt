@@ -32,14 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function fetchData(id) {
         try {
-            const response = await fetch(`http://localhost:3000/studios/${id}/detail`);
+            const response = await fetch(`/studios/${id}/detail`);
             if (!response.ok) throw new Error("Gagal mengambil data dari server");
 
             const json = await response.json();
 
             // Gabungkan data studio (termasuk gmaps_link) dengan data lainnya
             const data = {
-                ...json.studio, 
+                ...json.studio,
                 schedules: json.schedules,
                 facilities: json.facilities,
                 packages: json.packages,
@@ -61,14 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- A. PROFILE INFO ---
         ui.category.textContent = data.category || "Studio Foto";
         ui.name.textContent = data.name;
-        
+
         const ratingVal = data.rating ? Number(data.rating).toFixed(1) : "0.0";
         ui.rating.textContent = ratingVal;
         ui.reviews.textContent = `(${data.totalReviews || 0} Ulasan)`;
-        
+
         // Tampilkan Alamat
         ui.address.textContent = data.location || data.city || "Lokasi tidak tersedia";
-        
+
         // 🔥 LOGIKA KLIK MAPS (BARU) 🔥
         // Hapus event listener lama (jika ada) dengan trik cloneNode, atau cukup override onclick
         ui.address.onclick = () => {

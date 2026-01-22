@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!rawData) {
         alert("Anda belum login. Silakan login terlebih dahulu.");
-        window.location.href = "/login.html"; 
+        window.location.href = "/login.html";
         return;
     }
 
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Validasi role (opsional)
     if (user.role !== 'mitra') {
         alert("Halaman ini khusus untuk Mitra.");
-        window.location.href = "/index.html"; 
+        window.location.href = "/index.html";
         return;
     }
 
@@ -31,12 +31,12 @@ async function fetchStudioData(mitraId) {
     const emptyState = document.getElementById("emptyState");
 
     try {
-        const response = await fetch(`http://localhost:3000/mitra/${mitraId}/studio-detail`);
-        
-        loadingState.classList.add("hidden"); 
+        const response = await fetch(`/mitra/${mitraId}/studio-detail`);
+
+        loadingState.classList.add("hidden");
 
         if (!response.ok) throw new Error(`Server error: ${response.status}`);
-        
+
         const result = await response.json();
 
         if (!result.exists) {
@@ -49,11 +49,11 @@ async function fetchStudioData(mitraId) {
 
     } catch (error) {
         console.error("Error:", error);
-        
-        loadingState.classList.remove("hidden"); 
+
+        loadingState.classList.remove("hidden");
         contentState.classList.add("hidden");
         emptyState.classList.add("hidden");
-        
+
         loadingState.innerHTML = `
             <div style="text-align:center; color: red;">
                 <h3>Gagal Memuat Data</h3>
@@ -64,6 +64,7 @@ async function fetchStudioData(mitraId) {
 }
 
 function populateUI(data) {
+    // 1. INFO TEKS
     document.getElementById("studioType").textContent = data.category || "Studio";
     document.getElementById("studioName").textContent = data.name;
     document.getElementById("studioAddress").textContent = data.location || data.city;
@@ -73,16 +74,27 @@ function populateUI(data) {
     document.getElementById("studioRating").textContent = `⭐ ${ratingVal}`;
     document.getElementById("studioReview").textContent = `(${data.review_count || 0} ulasan)`;
 
+    // 2. LOGIKA GAMBAR (KHUSUS LOGO)
     const imgElement = document.getElementById("studioMainImage");
-    
+
     if (imgElement) {
+        const baseUrl = "/images/studios/";
+        const timestamp = new Date().getTime(); // Anti-cache biar logo baru langsung muncul
+
+        // Prioritas 1: data.logo (Kolom khusus logo)
+        // Prioritas 2: data.image (Di backend kamu, saat upload, logo juga masuk ke kolom image)
         if (data.logo) {
-            imgElement.src = `http://localhost:3000/images/studios/${data.logo}?t=${new Date().getTime()}`;
+            imgElement.src = `${baseUrl}${data.logo}?t=${timestamp}`;
         } else if (data.image) {
-            imgElement.src = `http://localhost:3000/images/studios/${data.image}`;
+            imgElement.src = `${baseUrl}${data.image}?t=${timestamp}`;
         } else {
-            imgElement.src = "https://placehold.co/300x200?text=No+Image";
+            imgElement.src = "https://via.placeholder.com/300?text=No+Logo";
         }
+
+        // TWEAK TAMPILAN:
+        // Pastikan gambar logo terlihat proporsional (tidak gepeng)
+        imgElement.style.objectFit = "cover";
+        // Jika ingin logo terlihat utuh di dalam kotak, ganti 'cover' jadi 'contain'
     }
 
     // 3. PACKAGES
@@ -92,11 +104,11 @@ function populateUI(data) {
     if (data.packages && data.packages.length > 0) {
         data.packages.forEach(pkg => {
             const tag = document.createElement("span");
-            tag.className = "mitra-tag"; 
-            
+            tag.className = "mitra-tag";
+
             const harga = new Intl.NumberFormat('id-ID').format(pkg.price);
             tag.textContent = `${pkg.name} (Rp ${harga})`;
-            
+
             packagesContainer.appendChild(tag);
         });
     } else {
@@ -104,10 +116,14 @@ function populateUI(data) {
     }
 
     // 4. BUTTON LINKS
-    document.getElementById("editStudioBtn").onclick = () => {
-        window.location.href = `editstudio-mitra.html?id=${data.id}`;
-    };
-    document.getElementById("previewStudioBtn").onclick = () => {
-        window.location.href = `preview-studio-mitra.html?id=${data.id}`;
-    };
+    // Pastikan tombol Edit & Preview mengarah ke ID studio yang benar
+    const editBtn = document.getElementById("editStudioBtn");
+    if (editBtn) {
+        editBtn.onclick = () => window.location.href = `editstudio-mitra.html?id=${data.id}`;
+    }
+
+    const previewBtn = document.getElementById("previewStudioBtn");
+    if (previewBtn) {
+        previewBtn.onclick = () => window.location.href = `preview-studio-mitra.html?id=${data.id}`;
+    }
 }

@@ -1,5 +1,5 @@
 const socket = io();
-const API_BASE_URL = "http://localhost:3000"; 
+const API_BASE_URL = "";
 
 /* =====================
    1. AUTH CHECK
@@ -54,30 +54,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     initChatFromBooking(bookingId);
   }
 
+  // 4. Fetch Fresh Profile (agar foto profil terbaru muncul)
+  await fetchCurrentUserProfile();
+
   if (sendBtn) sendBtn.addEventListener("click", sendMessage);
 });
 
-function setupNavigationButtons() {
-    // Tombol Back ke Dashboard (Desktop Header)
-    const dashboardBackBtn = document.querySelector(".back-link");
-    if (dashboardBackBtn) {
-        dashboardBackBtn.onclick = (e) => {
-            e.preventDefault();
-            window.location.href = "mitra-dashboard.html";
-        };
-    }
+let myProfileData = { ...currentUser };
 
-    // Tombol Back dari Chat Room ke List (Mobile Header)
-    if (mobileBackBtn) {
-        mobileBackBtn.onclick = () => {
-            // Hapus class agar Sidebar muncul kembali
-            if (chatContainerMain) chatContainerMain.classList.remove('mobile-view-active');
-            
-            // Hapus highlight visual pada item sidebar
-            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-            currentCustomerId = null;
-        };
+async function fetchCurrentUserProfile() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/users/${myId}`);
+    if (res.ok) {
+      const data = await res.json();
+      // Update local state
+      myProfileData = data;
+      console.log("Profile updated:", myProfileData);
     }
+  } catch (e) {
+    console.error("Gagal load profile terbaru:", e);
+  }
+}
+
+function setupNavigationButtons() {
+  // Tombol Back ke Dashboard (Desktop Header)
+  const dashboardBackBtn = document.querySelector(".back-link");
+  if (dashboardBackBtn) {
+    dashboardBackBtn.onclick = (e) => {
+      e.preventDefault();
+      window.location.href = "mitra-dashboard.html";
+    };
+  }
+
+  // Tombol Back dari Chat Room ke List (Mobile Header)
+  if (mobileBackBtn) {
+    mobileBackBtn.onclick = () => {
+      // Hapus class agar Sidebar muncul kembali
+      if (chatContainerMain) chatContainerMain.classList.remove('mobile-view-active');
+
+      // Hapus highlight visual pada item sidebar
+      document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+      currentCustomerId = null;
+    };
+  }
 }
 
 /* =====================
@@ -88,7 +107,7 @@ async function openChat(customerId, customerName, customerImage) {
 
   // [LOGIKA UI MOBILE] Pindah layar ke Chat Room
   if (chatContainerMain) {
-      chatContainerMain.classList.add('mobile-view-active');
+    chatContainerMain.classList.add('mobile-view-active');
   }
 
   // [VISUAL] Highlight item sidebar aktif
@@ -97,25 +116,26 @@ async function openChat(customerId, customerName, customerImage) {
   // UI Setup
   if (emptyState) emptyState.style.display = "none";
   if (chatRoom) chatRoom.style.display = "flex";
-  
+
   headerName.textContent = customerName;
 
   // Set Header Avatar
-  headerAvatar.innerHTML = ""; 
+  headerAvatar.innerHTML = "";
   headerAvatar.style.backgroundImage = "none";
-  
+
   if (customerImage) {
-      headerAvatar.style.backgroundImage = `url('${API_BASE_URL}/images/users/${customerImage}')`;
+    const bgUrl = customerImage.startsWith("http") ? customerImage : `${API_BASE_URL}/images/users/${customerImage}`;
+    headerAvatar.style.backgroundImage = `url('${bgUrl}')`;
   } else {
-      headerAvatar.style.backgroundColor = "#ddd";
-      headerAvatar.innerText = customerName.charAt(0).toUpperCase();
+    headerAvatar.style.backgroundColor = "#ddd";
+    headerAvatar.innerText = customerName.charAt(0).toUpperCase();
   }
 
   // Socket Room Setup
   const ids = [myId, customerId].sort((a, b) => a - b);
   ROOM_ID = `room_${ids[0]}_${ids[1]}`;
 
-  msgsContainer.innerHTML = ''; 
+  msgsContainer.innerHTML = '';
 
   socket.emit("join_room", ROOM_ID);
   await loadMessages();
@@ -123,35 +143,35 @@ async function openChat(customerId, customerName, customerImage) {
 
 // Helper: Highlight Sidebar
 function updateActiveSidebarItem(activeId) {
-    document.querySelectorAll('.chat-item').forEach(item => {
-        item.classList.remove('active');
-        if(item.dataset.id == activeId) item.classList.add('active');
-    });
+  document.querySelectorAll('.chat-item').forEach(item => {
+    item.classList.remove('active');
+    if (item.dataset.id == activeId) item.classList.add('active');
+  });
 }
 
 /* =====================
    5. AUTO OPEN FROM BOOKING
 ===================== */
 async function initChatFromBooking(bookingId) {
-    try {
-        const res = await fetch(`${API_BASE_URL}/mitra/bookings/${myId}`);
-        if (!res.ok) throw new Error("Gagal fetch data booking");
+  try {
+    const res = await fetch(`${API_BASE_URL}/mitra/bookings/${myId}`);
+    if (!res.ok) throw new Error("Gagal fetch data booking");
 
-        const data = await res.json();
-        const booking = data.find(item => item.id == bookingId);
+    const data = await res.json();
+    const booking = data.find(item => item.id == bookingId);
 
-        if (booking) {
-            const cId = booking.customer_id || booking.user_id; 
-            const cName = booking.customer_name;
-            const cImage = booking.customer_image || booking.user_image || null;
+    if (booking) {
+      const cId = booking.customer_id || booking.user_id;
+      const cName = booking.customer_name;
+      const cImage = booking.customer_image || booking.user_image || null;
 
-            if (cId) {
-                openChat(cId, cName, cImage);
-            }
-        }
-    } catch (err) {
-        console.error("Error auto-opening chat:", err);
+      if (cId) {
+        openChat(cId, cName, cImage);
+      }
     }
+  } catch (err) {
+    console.error("Error auto-opening chat:", err);
+  }
 }
 
 /* =====================
@@ -159,41 +179,42 @@ async function initChatFromBooking(bookingId) {
 ===================== */
 async function loadSidebarHistory() {
   try {
-      const res = await fetch(`${API_BASE_URL}/chats/history/${myId}`);
-      const chats = await res.json();
+    const res = await fetch(`${API_BASE_URL}/chats/history/${myId}`);
+    const chats = await res.json();
 
-      chatList.innerHTML = "";
+    chatList.innerHTML = "";
 
-      if (!chats.length) {
-        chatList.innerHTML = `<div style="padding:16px;text-align:center; color:#888;">Belum ada pesan</div>`;
-        return;
+    if (!chats.length) {
+      chatList.innerHTML = `<div style="padding:16px;text-align:center; color:#888;">Belum ada pesan</div>`;
+      return;
+    }
+
+    chats.forEach(c => {
+      const div = document.createElement("div");
+      div.className = "chat-item";
+      div.setAttribute("data-id", c.partner_id);
+
+      div.onclick = () => openChat(c.partner_id, c.partner_name, c.partner_image);
+
+      let avatarHTML = "";
+      if (c.partner_image) {
+        const bgUrl = c.partner_image.startsWith("http") ? c.partner_image : `${API_BASE_URL}/images/users/${c.partner_image}`;
+        avatarHTML = `<div class="avatar" style="background-image: url('${bgUrl}');"></div>`;
+      } else {
+        avatarHTML = `<div class="avatar" style="background-color: #ddd;">${c.partner_name.charAt(0).toUpperCase()}</div>`;
       }
 
-      chats.forEach(c => {
-        const div = document.createElement("div");
-        div.className = "chat-item";
-        div.setAttribute("data-id", c.partner_id);
-
-        div.onclick = () => openChat(c.partner_id, c.partner_name, c.partner_image);
-
-        let avatarHTML = "";
-        if (c.partner_image) {
-            avatarHTML = `<div class="avatar" style="background-image: url('${API_BASE_URL}/images/users/${c.partner_image}');"></div>`;
-        } else {
-            avatarHTML = `<div class="avatar" style="background-color: #ddd;">${c.partner_name.charAt(0).toUpperCase()}</div>`;
-        }
-
-        div.innerHTML = `
+      div.innerHTML = `
           ${avatarHTML}
           <div class="chat-info">
             <div class="chat-name">${c.partner_name}</div>
             <div class="chat-preview">${c.last_message || ""}</div>
           </div>
         `;
-        chatList.appendChild(div);
-      });
-  } catch(err) {
-      console.error("Error sidebar:", err);
+      chatList.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Error sidebar:", err);
   }
 }
 
@@ -204,23 +225,23 @@ async function loadMessages() {
   msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:#888;">Memuat...</div>`;
 
   try {
-      const res = await fetch(`${API_BASE_URL}/chats?user1=${myId}&user2=${currentCustomerId}`);
-      const msgs = await res.json();
-      msgsContainer.innerHTML = "";
+    const res = await fetch(`${API_BASE_URL}/chats?user1=${myId}&user2=${currentCustomerId}`);
+    const msgs = await res.json();
+    msgsContainer.innerHTML = "";
 
-      if (!msgs.length) {
-          msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:#888;">Mulai obrolan baru 👋</div>`;
-          return;
-      }
+    if (!msgs.length) {
+      msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:#888;">Mulai obrolan baru 👋</div>`;
+      return;
+    }
 
-      msgs.forEach(m => {
-        const type = m.sender_id === myId ? "sent" : "received";
-        addBubble(m.message, type, m.created_at);
-      });
-      
-      scrollBottom();
+    msgs.forEach(m => {
+      const type = m.sender_id === myId ? "sent" : "received";
+      addBubble(m.message, type, m.created_at, m.sender_image);
+    });
+
+    scrollBottom();
   } catch (err) {
-      msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:red;">Gagal memuat</div>`;
+    msgsContainer.innerHTML = `<div style="text-align:center;padding:20px;color:red;">Gagal memuat</div>`;
   }
 }
 
@@ -234,7 +255,9 @@ function sendMessage() {
   const timestamp = new Date().toISOString();
 
   // Optimistic UI Update
-  addBubble(text, "sent", timestamp);
+  const senderImg = myProfileData.image || currentUser.image;
+  addBubble(text, "sent", timestamp, senderImg);
+
   msgInput.value = "";
   scrollBottom();
 
@@ -244,7 +267,8 @@ function sendMessage() {
     sender_id: myId,
     receiver_id: currentCustomerId,
     message: text,
-    timestamp: timestamp
+    timestamp: timestamp,
+    sender_image: senderImg
   });
 
   // Save DB
@@ -264,7 +288,7 @@ function sendMessage() {
 ===================== */
 socket.on("receive_message", data => {
   if (data.sender_id == currentCustomerId) {
-    addBubble(data.message, "received", data.timestamp);
+    addBubble(data.message, "received", data.timestamp, data.sender_image);
     scrollBottom();
   }
 });
@@ -272,38 +296,50 @@ socket.on("receive_message", data => {
 /* =====================
    10. HELPER FUNCTIONS
 ===================== */
-function addBubble(text, type, timestamp) {
+function addBubble(text, type, timestamp, imageUrl) {
   const div = document.createElement("div");
   div.className = `bubble ${type}`;
-  
+
+  // Image HTML
+  let imgHtml = "";
+  if (imageUrl) {
+    const bgUrl = imageUrl.startsWith("http") ? imageUrl : `${API_BASE_URL}/images/users/${imageUrl}`;
+    imgHtml = `<div class="msg-avatar" style="background-image: url('${bgUrl}');"></div>`;
+  } else {
+    imgHtml = `<div class="msg-avatar" style="background-color: #ccc;">?</div>`;
+  }
+
   div.innerHTML = `
-      <div class="message-text">${escapeHtml(text)}</div>
-      <div class="message-time">${formatTime(timestamp)}</div>
+      ${imgHtml}
+      <div class="bubble-content">
+        <div class="message-text">${escapeHtml(text)}</div>
+        <div class="message-time">${formatTime(timestamp)}</div>
+      </div>
   `;
   msgsContainer.appendChild(div);
 }
 
 function scrollBottom() {
-    setTimeout(() => msgsContainer.scrollTop = msgsContainer.scrollHeight, 100);
+  setTimeout(() => msgsContainer.scrollTop = msgsContainer.scrollHeight, 100);
 }
 
 function formatTime(timestamp) {
-    if (!timestamp) return "";
-    try {
-        let dateStr = timestamp;
-        if (typeof timestamp === 'string' && timestamp.indexOf(' ') > 0 && timestamp.indexOf('T') === -1) {
-            dateStr = timestamp.replace(' ', 'T');
-        }
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return "";
-        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '.');
-    } catch (e) { return ""; }
+  if (!timestamp) return "";
+  try {
+    let dateStr = timestamp;
+    if (typeof timestamp === 'string' && timestamp.indexOf(' ') > 0 && timestamp.indexOf('T') === -1) {
+      dateStr = timestamp.replace(' ', 'T');
+    }
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':', '.');
+  } catch (e) { return ""; }
 }
 
 function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
 
 if (msgInput) {
-  msgInput.addEventListener("keypress", function(event) {
+  msgInput.addEventListener("keypress", function (event) {
     if (event.key === "Enter") {
       event.preventDefault();
       sendMessage();

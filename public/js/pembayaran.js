@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadBookingDetail(id) {
     try {
-        const res = await fetch(`http://localhost:3000/bookings/${id}`);
+        const res = await fetch(`/bookings/${id}`);
         if (!res.ok) throw new Error("Gagal memuat data booking");
 
         bookingData = await res.json();
@@ -65,6 +65,50 @@ async function loadBookingDetail(id) {
     } catch (err) {
         console.error(err);
         alert("Gagal memuat detail reservasi");
+    }
+
+    // --- RENDER DYNAMIC PAYMENT METHODS ---
+    const bankName = bookingData.payment_bank_name;
+    const bankNumber = bookingData.payment_account_number;
+    const qrisImage = bookingData.qris_image;
+
+    const cardVA = document.getElementById('card-va');
+    const cardQRIS = document.getElementById('card-qris');
+
+    // 1. Setup Bank Transfer (VA)
+    if (bankName && bankNumber) {
+        const bankContainer = document.querySelector('.bank-options');
+        // Render single bank choice based on Studio Data
+        bankContainer.innerHTML = `
+            <div class="bank-choice" onclick="selectBank(this)">
+                <div class="bank-name">${bankName}</div>
+                <div class="bank-number">${bankNumber}</div>
+                <div class="bank-number" style="font-size:11px; margin-top:2px;">(a.n. Studio)</div>
+            </div>
+        `;
+    } else {
+        // Hide Bank option if not provided
+        cardVA.style.display = 'none';
+    }
+
+    // 2. Setup QRIS
+    if (qrisImage) {
+        const qrisImgElem = document.querySelector('.qris-img');
+        // URL sesuai folder upload di server (images/studios)
+        qrisImgElem.src = `/images/studios/${qrisImage}`;
+    } else {
+        // Hide QRIS option if not provided
+        cardQRIS.style.display = 'none';
+    }
+
+    // Default select none -> CHANGED: Auto select first available method
+    selectedMethod = null;
+
+    // Auto-select logic for better UX on Mobile
+    if (bankName && bankNumber) {
+        togglePayment('va');
+    } else if (qrisImage) {
+        togglePayment('qris');
     }
 }
 
@@ -160,7 +204,7 @@ async function confirmPayment() {
     formData.append('proof_image', proofFile);
 
     try {
-        const res = await fetch('http://localhost:3000/payments', {
+        const res = await fetch('/payments', {
             method: 'POST',
             body: formData
         });
@@ -185,10 +229,11 @@ function openChatFromPayment() {
 
     const partnerId = bookingData.mitra_id;
     const partnerName = encodeURIComponent(bookingData.studio_name);
-    
-    const partnerPhoto = bookingData.studio_image ? encodeURIComponent(bookingData.studio_image) : '';
+
+    // studio_image dari backend sekarang adalah filename logo
+    const partnerLogo = bookingData.studio_image ? encodeURIComponent(bookingData.studio_image) : '';
 
     console.log(`Membuka Chat Room Pembayaran dengan Mitra ID: ${partnerId}`);
 
-    window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_photo=${partnerPhoto}`;
+    window.location.href = `chat.html?partner_id=${partnerId}&partner_name=${partnerName}&partner_logo=${partnerLogo}`;
 }

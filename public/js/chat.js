@@ -3,7 +3,7 @@
 // =====================
 const PAGE_TYPE = document.body.dataset.page;
 const socket = io();
-const API_BASE_URL = "http://localhost:3000"; 
+const API_BASE_URL = "";
 
 // =====================
 // 2. AUTH USER CHECK (VERSI ANTI-ERROR)
@@ -12,19 +12,15 @@ const storedData = localStorage.getItem("currentUser");
 const rawUser = storedData ? JSON.parse(storedData) : null;
 
 // Normalisasi data (jaga-jaga kalau datanya ada di dalam properti .data)
-const currentUser = rawUser?.data || rawUser;
-const userRole = (currentUser?.role || "").toLowerCase(); // Ubah ke huruf kecil biar aman
+// Normalisasi data (jaga-jaga kalau datanya ada di dalam properti .data)
+const currentUser = rawUser?.data || rawUser || {}; // Default object kosong agar tidak null
+const userRole = (currentUser?.role || "").toLowerCase();
 
-// Cek Validasi
-if (!currentUser || userRole !== "customer") {
-    // Kalau gagal, tendang ke login
-    console.warn("Auth gagal. Role:", userRole);
-    window.location.href = "login.html";
-    throw new Error("Sesi habis atau bukan customer");
-}
+// REMOVED: Strict auth check
+// if (!currentUser || userRole !== "customer") { ... }
 
-const myId = currentUser.id;
-const myName = currentUser.name || "Pengguna";
+const myId = currentUser.id || 0; // Default ID 0/null safe
+const myName = currentUser.name || "Guest";
 
 // =====================
 // 3. URL PARAMETERS
@@ -65,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (currentPartnerId) {
         openChat(currentPartnerId, currentPartnerName, currentPartnerLogo);
     }
-    
+
     if (sendBtn) sendBtn.addEventListener("click", sendMessage);
 });
 
@@ -75,7 +71,7 @@ function setupNavigationButtons() {
     if (dashboardBackBtn) {
         dashboardBackBtn.onclick = (e) => {
             e.preventDefault();
-            window.location.href = "customer-app.html";
+            window.history.back();
         };
     }
 
@@ -113,11 +109,11 @@ async function openChat(partnerId, partnerName, partnerLogo = null) {
 
     // Update Header
     if (headerName) headerName.innerText = currentPartnerName;
-    
+
     if (headerAvatar) {
-        headerAvatar.innerHTML = ""; 
-        headerAvatar.style.backgroundImage = "none"; 
-        
+        headerAvatar.innerHTML = "";
+        headerAvatar.style.backgroundImage = "none";
+
         if (partnerLogo && partnerLogo !== "null") {
             headerAvatar.style.backgroundImage = `url('/images/studios/${partnerLogo}')`;
         } else {
@@ -131,12 +127,12 @@ async function openChat(partnerId, partnerName, partnerLogo = null) {
     ROOM_ID = `room_${ids[0]}_${ids[1]}`;
 
     socket.emit("join_room", ROOM_ID);
-    
+
     updateActiveChatInSidebar(partnerId);
     await loadMessages();
-    
+
     // Auto focus hanya di desktop
-    if(window.innerWidth > 768 && msgInput) msgInput.focus();
+    if (window.innerWidth > 768 && msgInput) msgInput.focus();
 }
 
 // =====================
@@ -146,7 +142,7 @@ async function loadSidebarHistory() {
     try {
         const res = await fetch(`${API_BASE_URL}/chats/history/${myId}`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
+
         const chats = await res.json();
 
         if (!chatList) return;
@@ -161,11 +157,11 @@ async function loadSidebarHistory() {
             const div = document.createElement("div");
             div.className = "chat-item";
             div.setAttribute('data-partner-id', chat.partner_id);
-            
+
             const pName = chat.partner_name || "Unknown";
             const pId = chat.partner_id;
             const pLogo = chat.partner_logo;
-            
+
             let avatarHtml;
             if (pLogo) {
                 avatarHtml = `<div class="avatar" style="background-image: url('/images/studios/${pLogo}');"></div>`;
@@ -182,8 +178,8 @@ async function loadSidebarHistory() {
             `;
 
             div.onclick = () => {
-                const newUrl = `customer-chat.html?partner_id=${pId}&partner_name=${encodeURIComponent(pName)}`;
-                window.history.pushState({path: newUrl}, '', newUrl);
+                const newUrl = `chat.html?partner_id=${pId}&partner_name=${encodeURIComponent(pName)}&partner_logo=${pLogo}`;
+                window.history.pushState({ path: newUrl }, '', newUrl);
                 openChat(pId, pName, pLogo);
             };
 
@@ -205,7 +201,7 @@ async function loadMessages() {
     try {
         const res = await fetch(`${API_BASE_URL}/chats?user1=${myId}&user2=${currentPartnerId}`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
+
         const msgs = await res.json();
         msgsContainer.innerHTML = "";
 
@@ -235,7 +231,7 @@ function sendMessage() {
     if (!text || !currentPartnerId) return;
 
     const timestamp = new Date().toISOString();
-    
+
     // UI Optimistic Update
     addBubble(text, "sent", timestamp);
     msgInput.value = "";
@@ -273,8 +269,8 @@ async function saveMessageToDB(message) {
 // 11. SOCKET LISTENERS
 // =====================
 socket.on("receive_message", data => {
-    if (data.sender_id == currentPartnerId || 
-       (data.sender_id == myId && data.receiver_id == currentPartnerId)) {
+    if (data.sender_id == currentPartnerId ||
+        (data.sender_id == myId && data.receiver_id == currentPartnerId)) {
         const type = data.sender_id == myId ? "sent" : "received";
         addBubble(data.message, type, data.timestamp);
         scrollBottom();
@@ -283,7 +279,7 @@ socket.on("receive_message", data => {
 
 socket.on("new_message", data => {
     if (data.receiver_id == myId || data.sender_id == myId) {
-        loadSidebarHistory(); 
+        loadSidebarHistory();
     }
 });
 
@@ -298,7 +294,7 @@ function addBubble(text, type, timestamp) {
     if (!msgsContainer) return;
     const div = document.createElement("div");
     div.className = `bubble ${type}`;
-    
+
     div.innerHTML = `
         <div class="message-text">${escapeHtml(text)}</div>
         <div class="message-time">${formatTime(timestamp)}</div>

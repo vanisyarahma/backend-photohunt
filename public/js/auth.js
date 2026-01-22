@@ -1,7 +1,7 @@
 // Cek Login State saat halaman dimuat
 window.addEventListener('DOMContentLoaded', () => {
     const currentUser = localStorage.getItem('currentUser');
-    
+
     // Halaman yang TIDAK butuh login
     const publicPages = ['login.html', 'signup.html'];
     const currentPage = window.location.pathname.split("/").pop();
@@ -10,8 +10,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const user = JSON.parse(currentUser);
         // Kalau sudah login tapi buka halaman login, lempar ke dashboard
         if (publicPages.includes(currentPage)) {
-             if (user.role === 'mitra') window.location.href = 'mitra-dashboard.html';
-             else window.location.href = 'customer-app.html';
+            if (user.role === 'mitra') window.location.href = 'mitra-dashboard.html';
+            else window.location.href = 'customer-app.html';
         }
     } else {
         // Kalau belum login tapi buka halaman dashboard, lempar ke login
@@ -26,7 +26,7 @@ const signupForm = document.getElementById('signupForm');
 if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         // Ambil data form
         const name = e.target[0].value;
         const phone = e.target[1].value;
@@ -36,7 +36,7 @@ if (signupForm) {
 
         try {
             // KIRIM KE SERVER
-            const res = await fetch("http://localhost:3000/signup", {
+            const res = await fetch("/signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, email, password, role, phone })
@@ -59,7 +59,7 @@ if (signupForm) {
 }
 
 // LOGOUT FUNCTION (Global)
-window.logout = function() {
+window.logout = function () {
     if (confirm('Yakin ingin keluar?')) {
         localStorage.removeItem('currentUser');
         window.location.href = 'login.html';

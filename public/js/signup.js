@@ -1,14 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
   // 1. AMBIL ROLE DARI URL (YANG DIKIRIM DARI LOGIN)
   const params = new URLSearchParams(window.location.search);
-  
+
   // PERBAIKAN 1: Defaultnya harus 'customer', JANGAN 'pengguna'
   // Biar cocok sama Database & Logic Login
   let role = params.get("role");
 
   // Jaga-jaga kalau url nya aneh, kita paksa pilih salah satu
   if (role !== "mitra" && role !== "customer") {
-      role = "customer"; 
+    role = "customer";
   }
 
   console.log("System Check: User akan mendaftar sebagai ->", role);
@@ -58,8 +58,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // PERBAIKAN 2: Pakai alamat lengkap http://localhost:3000
-      const res = await fetch("http://localhost:3000/register", {
+      // PERBAIKAN 2: Pakai Relative Path (auto detect host)
+      const res = await fetch("/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
           password,
           role,           // Nilainya 'mitra' atau 'customer' (aman)
           phone,          // Pastikan kolom 'phone' SUDAH DITAMBAH di Database phpMyAdmin tadi
-          gender: selectedGender 
+          gender: selectedGender
         })
       });
 

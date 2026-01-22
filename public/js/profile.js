@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000'; 
+const API_BASE_URL = ''; // Relative path auto-detects origin 
 
 function getAuthToken() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -31,10 +31,10 @@ async function loadProfile() {
         }
 
         const user = await response.json();
-        
+
         // Update session storage dengan data terbaru
         localStorage.setItem('currentUser', JSON.stringify(user));
-        
+
         populateForm(user);
 
     } catch (error) {
@@ -49,29 +49,29 @@ async function loadProfile() {
 function populateForm(user) {
     const displayName = document.getElementById('display-name-header');
     const displayEmail = document.getElementById('display-email-header');
-    
+
     // Gunakan optional chaining (?.) dan OR (||) untuk keamanan
     if (displayName) displayName.innerText = user.name || 'User';
     if (displayEmail) displayEmail.innerText = user.email || '';
-    
+
     const avatarImg = document.getElementById('avatar-img');
-    if(avatarImg) {
-        if(user.image) {
+    if (avatarImg) {
+        if (user.image) {
             // Tambah timestamp agar gambar tidak cache saat diupdate
             avatarImg.src = `${API_BASE_URL}/images/users/${user.image}?t=${new Date().getTime()}`;
             avatarImg.style.display = 'block';
         } else {
-            avatarImg.style.display = 'none'; 
+            avatarImg.style.display = 'none';
         }
     }
 
     const inputName = document.getElementById('input-name');
-    if (inputName) inputName.value = user.name || ''; 
-    
+    if (inputName) inputName.value = user.name || '';
+
     const inputEmail = document.getElementById('input-email');
     if (inputEmail) {
-        inputEmail.value = user.email || ''; 
-        inputEmail.readOnly = true; 
+        inputEmail.value = user.email || '';
+        inputEmail.readOnly = true;
         inputEmail.classList.add('input-disabled');
     }
 
@@ -79,8 +79,8 @@ function populateForm(user) {
     if (inputPhone) inputPhone.value = user.phone || '';
 
     const inputGender = document.getElementById('input-gender');
-    if (inputGender) inputGender.value = user.gender || ''; 
-    
+    if (inputGender) inputGender.value = user.gender || '';
+
     const inputBirthday = document.getElementById('input-birthday');
     if (inputBirthday && user.birthday) {
         // Format tanggal yyyy-MM-dd untuk input type date
@@ -113,8 +113,8 @@ if (btnSaveProfile) {
 
             // Update UI Header
             const headerName = document.getElementById('display-name-header');
-            if(headerName) headerName.innerText = updatedData.name;
-            
+            if (headerName) headerName.innerText = updatedData.name;
+
             // Update LocalStorage
             const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
             const newSessionData = { ...currentUser, ...updatedData };
@@ -142,7 +142,7 @@ if (btnSavePassword) {
 
         try {
             const response = await fetch(`${API_BASE_URL}/change-password`, {
-                method: 'POST', 
+                method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
             });
@@ -153,7 +153,7 @@ if (btnSavePassword) {
 
             alert('Password berhasil diubah. Silakan login ulang.');
             localStorage.removeItem('currentUser');
-            window.location.href = 'login.html'; 
+            window.location.href = 'login.html';
 
         } catch (error) {
             console.error("Password Error:", error);
@@ -189,7 +189,7 @@ if (fileInput) {
             if (!response.ok) throw new Error(result.message || "Gagal upload");
 
             const avatarImg = document.getElementById('avatar-img');
-            if(avatarImg) {
+            if (avatarImg) {
                 avatarImg.src = `${API_BASE_URL}/images/users/${result.image}?t=${new Date().getTime()}`;
                 avatarImg.style.display = 'block';
             }
@@ -210,7 +210,7 @@ if (fileInput) {
 }
 
 function redirectToSettings() {
-    window.location.href = 'pengaturan.html'; 
+    window.location.href = 'pengaturan.html';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
