@@ -64,15 +64,25 @@ let myProfileData = { ...currentUser };
 
 async function fetchCurrentUserProfile() {
   try {
-    const res = await fetch(`${API_BASE_URL}/users/${myId}`);
-    if (res.ok) {
-      const data = await res.json();
-      // Update local state
+    // 1. Fetch User Data
+    const resUser = await fetch(`${API_BASE_URL}/users/${myId}`);
+    if (resUser.ok) {
+      const data = await resUser.json();
       myProfileData = data;
-      console.log("Profile updated:", myProfileData);
+    }
+
+    // 2. Fetch Studio Data (untuk ambil Logo Toko)
+    const resStudio = await fetch(`${API_BASE_URL}/mitra/${myId}/studio-detail`);
+    if (resStudio.ok) {
+      const studioData = await resStudio.json();
+      if (studioData.exists && studioData.data && studioData.data.logo) {
+        // OVERRIDE image dengan logo studio untuk chat bubble
+        myProfileData.image = "studios/" + studioData.data.logo;
+        console.log("Using Studio Logo for Chat:", myProfileData.image);
+      }
     }
   } catch (e) {
-    console.error("Gagal load profile terbaru:", e);
+    console.error("Gagal load profile/studio:", e);
   }
 }
 
@@ -300,17 +310,7 @@ function addBubble(text, type, timestamp, imageUrl) {
   const div = document.createElement("div");
   div.className = `bubble ${type}`;
 
-  // Image HTML
-  let imgHtml = "";
-  if (imageUrl) {
-    const bgUrl = imageUrl.startsWith("http") ? imageUrl : `${API_BASE_URL}/images/users/${imageUrl}`;
-    imgHtml = `<div class="msg-avatar" style="background-image: url('${bgUrl}');"></div>`;
-  } else {
-    imgHtml = `<div class="msg-avatar" style="background-color: #ccc;">?</div>`;
-  }
-
   div.innerHTML = `
-      ${imgHtml}
       <div class="bubble-content">
         <div class="message-text">${escapeHtml(text)}</div>
         <div class="message-time">${formatTime(timestamp)}</div>

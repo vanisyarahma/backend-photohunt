@@ -181,6 +181,8 @@ let db;
   try { await db.execute("ALTER TABLE studios ADD COLUMN payment_account_holder VARCHAR(100)"); } catch (e) { }
   try { await db.execute("ALTER TABLE studios ADD COLUMN qris_image VARCHAR(255)"); } catch (e) { }
   try { await db.execute("ALTER TABLE users ADD COLUMN image VARCHAR(255)"); } catch (e) { }
+  try { await db.execute("ALTER TABLE users ADD COLUMN gender ENUM('male', 'female')"); } catch (e) { }
+  try { await db.execute("ALTER TABLE users ADD COLUMN birthday DATE"); } catch (e) { }
 
   console.log("✅ DATABASE READY & SCHEMA UPDATED");
 
@@ -314,6 +316,79 @@ app.put("/users/:id", async (req, res) => {
   } catch (err) {
     console.error("❌ UPDATE USER ERROR:", err);
     res.status(500).json({ message: "Gagal update profil" });
+  }
+});
+
+// [BARU] UPDATE PROFILE (PUT /profile) - Sesuai Frontend
+app.put('/profile', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  console.log("--> [DEBUG] PUT /profile hit");
+  console.log("--> [DEBUG] Token:", token);
+  console.log("--> [DEBUG] Body:", req.body);
+
+  if (!token) return res.sendStatus(401);
+
+  const userId = token; // Asumsi token = userId
+  const { name, phone, gender, birthday } = req.body;
+
+  try {
+    const sql = "UPDATE users SET name=?, phone=?, gender=?, birthday=? WHERE id=?";
+    const params = [name, phone, gender || null, birthday || null, userId];
+    console.log("--> [DEBUG] Executing SQL:", sql);
+    console.log("--> [DEBUG] Params:", params);
+
+    await db.execute(sql, params);
+
+    // Ambil data terbaru
+    const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+
+    console.log("--> [DEBUG] Updated User:", rows[0]);
+
+    res.json({
+      success: true,
+      user: rows[0],
+      message: "Profil berhasil diperbarui"
+    });
+
+  } catch (err) {
+    console.error("❌ UPDATE PROFILE ERROR:", err);
+    res.status(500).json({ message: "Gagal update profil: " + err.message });
+  }
+});
+
+// [BARU] CHANGE PASSWORD (POST /change-password) - Sesuai Frontend
+app.post('/change-password', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) return res.sendStatus(401);
+
+  const userId = token; // Asumsi token = userId
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Data tidak lengkap" });
+  }
+
+  try {
+    // 1. Cek password lama
+    const [rows] = await db.query("SELECT password FROM users WHERE id = ?", [userId]);
+    if (rows.length === 0) return res.status(404).json({ message: "User tidak ditemukan" });
+
+    if (rows[0].password !== currentPassword) {
+      return res.status(400).json({ message: "Password saat ini salah" });
+    }
+
+    // 2. Update password
+    await db.execute("UPDATE users SET password = ? WHERE id = ?", [newPassword, userId]);
+
+    res.json({ success: true, message: "Password berhasil diubah" });
+
+  } catch (err) {
+    console.error("❌ CHANGE PASSWORD ERROR:", err);
+    res.status(500).json({ message: "Gagal ganti password" });
   }
 });
 
@@ -1263,10 +1338,16 @@ app.post("/users/:id/image", uploadProfile.single("image"), async (req, res) => 
 app.get("/chats", async (req, res) => {
   const { user1, user2 } = req.query;
   try {
+    // Gunakan prefix folder agar frontend tahu load dari mana
     const sql = `
-      SELECT c.id, c.sender_id, c.receiver_id, c.message, c.created_at, u.image as sender_image
+      SELECT c.id, c.sender_id, c.receiver_id, c.message, c.created_at, 
+             CASE 
+               WHEN s.logo IS NOT NULL THEN CONCAT('studios/', s.logo)
+               ELSE CONCAT('users/', u.image)
+             END as sender_image
       FROM chats c
       JOIN users u ON c.sender_id = u.id
+      LEFT JOIN studios s ON u.id = s.mitra_id
       WHERE (c.sender_id = ? AND c.receiver_id = ?)
          OR (c.sender_id = ? AND c.receiver_id = ?)
       ORDER BY c.created_at ASC

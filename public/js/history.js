@@ -91,7 +91,6 @@ function renderHistory(data) {
         const styleConfig = getStatusConfig(item);
         const statusLower = (item.status || "").toLowerCase();
 
-        // Only allow opening details if status is confirmed, paid, or completed
         const isClickable = ['confirmed', 'paid', 'completed'].includes(statusLower);
 
         const onClickAttr = isClickable ? `onclick="bukaDetailPesanan('${item.id}')"` : '';
